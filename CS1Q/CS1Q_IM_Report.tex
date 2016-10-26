@@ -61,10 +61,64 @@ Also, which course has tutorial groups, which students are in each tutorial grou
 \subsection{Query 6}
 
 \section{Description}
+\subsection{Entity Relationship Diagram}
 \includegraphics[width=\linewidth]{ER}
 The above diagram is the initial enitity relationship diagram I produced from the given brief, which had a number of flaws in its design.
 Firstly, the Staff entity type is missing its status attribute, which is required to determine the type of member of staff an entity is.
 Next, the recursive relationship, to show which member of staff manages other member of staff, the supervisor side does not require total participation.
-The issue has occured with both sides of trhe lecture-courses relationship the one side of the courses-tutorial group relationship and the many side of the students-tutorial group relationship.
+The same issue has occured with both sides of trhe lecture-courses relationship the one side of the courses-tutorial group relationship and the many side of the students-tutorial group relationship.
+Furthermore, the many side of the student-courses relationship does require total participation, because a course must have students.
+Also, none of the primary key attributes have been defined.
+Finally, the Tutorial Group entity should not be weak entity, as a weak entity means said entity cannot exist without a course, but a tutorial group can exist without being part of a course.
+For example, there could be a tutorial group for helping students with their note taking skills.
+
+\includegraphics[width=\linewidth]{tut1_solution}
+The above diagram is the final revision of my entity relationship diagram, where I addressed the previously stated issues.
+The missing 'Status' attriute for the Staff Member entity type has been added and 'Staff No' has been assigned as Staff Member's primary key.
+All entity types have been assigned a primary key and some attriubutes, such as Staff Member's Forename and Surname, have been combined into a compostite attribute as they combine to form the data which would be stored if the composite attribute was one attriubte.
+
+\subsection{Relational Schema Design}
+Using the above diagram, I designed and implemented a relational database schema, which involved converting the entity types and the many-to-many relationships into distinct relations.
+A many-to-many relationship could be implemented without an intermediary relation, but it would cause a large amount of redundancy as each entry and its attributes will be repeated.
+By adding an intermediary relation, with the primary keys of both relations involved as attributes, the relationship will be maintained without the added redundancy.
+In order to design the the Student-takes-Course relationship, the intermediary relation will be used to store the relationship attributes as its own attributes.
+This allows a student to take exams for an undefined number of courses, whereas if the 'Exam Mark' and 'Practical Mark' were attriubtes on the Student relation, the maximum number of exams a student could take would have to be defined.
+Most database managment systems implmentations do not natively support subtypes, which means the Staff Member inheritance higherarcy will have to be implemented manually.
+In order to acheive similar functionalty, a Staff Member relation will be created with both the Lecturer and Tutor relations having a one-to-one relationship with Staff Member.
+Each entry in the Tutor and Lecturer relations will have a corrisponding entry in the Staff Member relation.
+Compound attributes are natively supported by most database management systems, so they have to be collapsed into individual attributes in their respective relation.
+\\
+\\
+The following is the relational scheme I created from the above entity relationship diagram, where an underlined attribute is a primary or compound key and an italic attribute is a forgein key.\\\\
+StaffMember(\underline{StaffNo:Int}, Forename:Varchar, Surname:Varchar, Status:Varchar, \textit{ManagedBy:Int})\\
+Tutor(\underline{\textit{StaffNo:Int}}, ResponsabiltyStart:Int, ResponsibiltyEnd:Int)\\
+Lecturer(\underline{\textit{StaffNo:Int}}, PartTime:Boolean)\\
+Course(\underline{ID:Int}, Title:Varchar)\\
+TutorialGroup(\underline{TutorialId:Int}, TutorialRoom:Varchar, LabRoom:Varchar, \textit{Tutor:Int}, \textit{Course:Int})\\
+Student(\underline{MatricNo:Varchar}, Forename:Varchar, Surname:Varchar, Email:Varchar)\\
+LecturerCourse(\underline{\textit{CourseId:Int}, \textit{LecturerId:Int}})\\
+StudentCourse(\underline{\textit{StudentId:Int}, \textit{CourseId:Int}}, ExamMark:Int, PracticalMark:Int)\\
+StudentTutorial(\underline{\textit{StudentId:Int}, \textit{TutorialGroupId:Int}})\\
+
+\subsection{Populating the Database}
+A database without any data is not very useful.
+In order to populate the database efficently, I used MySQL Workbench's built in CSV loading functionailty.
+This produces SQL similar to the following:
+\begin{lstlisting}
+LOAD DATA INFILE 'data.csv' INTO TABLE dbname.table;
+\end{lstlisting}
+Using this method exposed an issue with the design of the Staff Member relation.
+When adding a new staff member, it must have a 'ManagedBy' attribute, but as the table is empty initially, there is no member of staff to reference when adding the initial member of staff.
+This was solved by temporarly removed the foreign key constraint until the initial member's of staff were added.
+
+\subsection{Querying the Database}
+In order to access the data, one must query the database using SQL.
+SQL is a declartive language, in which you define what data is needed and what form it should be in, the the database managment system converts that into relational algebra for the database engine to execute.
+In order to from a SQL query, I had to find what data I needed and what form it had to be in from the task.
+For example, if I was asked to find the names of all the professors, the data is the Staff Member data, filtered to only those who's status is 'professor' and the form is their forename and surname.
+Hence, I would use the following SQL to retreive the data:
+\begin{lstlisting}
+SELECT Forename,Surname FROM StaffMember WHERE Status=="professor";
+\end{lstlisting}
 
 \end{document}
