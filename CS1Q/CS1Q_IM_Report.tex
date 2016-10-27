@@ -40,9 +40,9 @@ A database is an entity which stores data in a structured manner while minimisin
 Before databases became popular, data was stored in files.
 This did not allow for concurrent access of the data as the operating system would restrict the number of user with access to each file.
 Also, there was no way to link the data, which caused redundancy.
-Finally, each program would have to implement some form structure to its data, which causes potential inconsistencies between programs.
+Finally, each program would have to implement its own structure to its data, which causes potential inconsistencies between programs.
 Databases solved these problems by allowing data to be linked through relationships and creating an abstraction between the physical layout of the data on disk and the program using it.
-By providing the abstraction, any programs which use the data can access the data in the same way.
+By providing the abstraction, any programs which use the data, can access the data in the same way.
 In order to allow for concurrent access of the data, a database management system will lie between programs and the database.
 The database management system will monitor and control who is trying to access the database, locking sections of the database while users use them.
 This allows controlled concurrent access to the database, and allowing different user to be able to carry out a subset of the available database operations.
@@ -70,11 +70,11 @@ Also, which course has tutorial groups, which students are in each tutorial grou
 \subsection{Entity Relationship Diagram}
 \includegraphics[width=\linewidth]{ER}
 The above diagram is the initial entity relationship diagram I produced from the given brief, which had a number of flaws in its design.
-Firstly, the Staff entity type is missing its status attribute, which is required to determine the type of member of staff an entity is.
+Firstly, the Staff entity type is missing its Status attribute, which is required to determine the type of member of staff an entity is.
 Next, the recursive relationship, to show which member of staff manages other member of staff, the supervisor side does not require total participation.
 The same issue has occurred with both sides of the lecture-courses relationship the one side of the courses-tutorial group relationship and the many side of the students-tutorial group relationship.
 Furthermore, the many side of the student-courses relationship does require total participation, because a course must have students.
-Also, none of the primary key attributes have been defined.
+Also, no primary keys have been defined for any relations.
 Finally, the Tutorial Group entity should not be weak entity, as a weak entity means said entity cannot exist without a course, but a tutorial group can exist without being part of a course.
 For example, there could be a tutorial group for helping students with their note taking skills.
 
