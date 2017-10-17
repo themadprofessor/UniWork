@@ -1,5 +1,6 @@
 \documentclass[11pt, a4paper]{article}
-\usepackage{a4wide,mathtools}
+\usepackage{mathtools}
+\usepackage[a4paper,includeheadfoot,margin=2.54cm]{geometry}
 
 \begin{document}
 
@@ -18,9 +19,22 @@
 	                                               &\equiv ((\neg p \lor q) \lor (p \to r)) \to (q \lor r)                                     & \text{double negation law} \\
 						       &\equiv (\neg p \lor (p \lor r)) \lor (q \lor (p \lor r)) \to (q \lor r)                    & \text{distributive law} \\
 						       &\equiv (\neg p \lor p) \lor (\neg p \lor r) \lor (q \lor p) \lor (q \lor r) \to (q \lor r) & \text{distributive law} \\
-						       &\equiv \texttt{true} \to (q \lor r)                                                        & \text{identity law}
-						       &\equiv \neg \texttt{true} \lor (q \lor r)                                                  & \text{implication law}
-						       &\equiv \texttt{false} \or (q \lor r)                                                       & \\
+						       &\equiv \texttt{true} \to (q \lor r)                                                        & \text{identity law} \\
+						       &\equiv \neg \texttt{true} \lor (q \lor r)                                                  & \text{implication law} \\
+						       &\equiv \texttt{false} \lor (q \lor r)                                                      & \\
 						       &\equiv q \lor r                                                                            & \text{identity law}
+\end{align*}
+
+\subsection*{Part (c)}
+\begin{align*}
+	\neg \forall x \in U.(P(x) \lor \neg Q(x)) &\equiv \exists x \in U.(\neg (P(x) \lor \neg Q(x)))     & \text{quantifier law} \\
+	                                           &\equiv \exists x \in U.(\neg P(x) \land \neg \neg Q(x)) & \text{De Morgan's law} \\
+						   &\equiv \exists x \in U.(\neg P(x) \land Q(x))           & \text{double negation law}
+\end{align*}
+
+\section*{Question 2}
+\subsection*{Part (a)}
+\begin{align*}
+	
 \end{align*}
 \end{document}
