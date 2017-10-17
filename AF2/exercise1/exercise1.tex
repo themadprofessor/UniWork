@@ -3,8 +3,8 @@
 
 \begin{document}
 
-\section{Question 1}
-\subsection{Part (a)}
+\section*{Question 1}
+\subsection*{Part (a)}
 \begin{align*}
 	p \to (p \lor q) &\equiv \neg p \lor (p \lor q)               & \text{implication law} \\
 			 &\equiv (\neg p \lor p) \lor (\neg p \lor q) & \text{distributive law} \\
@@ -12,4 +12,15 @@
 			 &\equiv \texttt{true}                        & \text{identity law}
 \end{align*}
 
+\subsection*{Part (b)}
+\begin{align*}
+	((p \to q) \lor (\neg p \to r)) \to (q \lor r) &\equiv ((\neg p \lor q) \lor (\neg \neg p \to r)) \to (q \lor r)                           & \text{implication law} \\
+	                                               &\equiv ((\neg p \lor q) \lor (p \to r)) \to (q \lor r)                                     & \text{double negation law} \\
+						       &\equiv (\neg p \lor (p \lor r)) \lor (q \lor (p \lor r)) \to (q \lor r)                    & \text{distributive law} \\
+						       &\equiv (\neg p \lor p) \lor (\neg p \lor r) \lor (q \lor p) \lor (q \lor r) \to (q \lor r) & \text{distributive law} \\
+						       &\equiv \texttt{true} \to (q \lor r)                                                        & \text{identity law}
+						       &\equiv \neg \texttt{true} \lor (q \lor r)                                                  & \text{implication law}
+						       &\equiv \texttt{false} \or (q \lor r)                                                       & \\
+						       &\equiv q \lor r                                                                            & \text{identity law}
+\end{align*}
 \end{document}
