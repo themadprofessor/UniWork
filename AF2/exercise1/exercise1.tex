@@ -6,8 +6,10 @@
 \section{Question 1}
 \subsection{Part (a)}
 \begin{align*}
-	p \to (p \land q) & \equiv \neg p \lor (p \and q) & \mbox{implication law} \\
-			  & \equiv (\neg p \lor p) \and (\neg p \lor q)  & \mbox{law}
+	p \to (p \lor q) &\equiv \neg p \lor (p \lor q)               & \text{implication law} \\
+			 &\equiv (\neg p \lor p) \lor (\neg p \lor q) & \text{distributive law} \\
+			 &\equiv \texttt{true} \lor (\neg p \lor q)   & \text{tautology law} \\
+			 &\equiv \texttt{true}                        & \text{identity law}
 \end{align*}
 
 \end{document}
