@@ -1,6 +1,9 @@
 \documentclass[11pt, a4paper]{article}
-\usepackage{mathtools}
+\usepackage{mathtools,amssymb}
 \usepackage[a4paper,includeheadfoot,margin=2.54cm]{geometry}
+
+\pagestyle{myheadings}
+\markright{Stuart Reilly 2258082R}
 
 \begin{document}
 
@@ -34,7 +37,7 @@
 
 \section*{Question 2}
 \subsection*{Part (a)}
-This formulae is true as every postive integer must be either even or odd, but not both.
+This formulae is true as every positive integer must be either even or odd, but not both.
 Therefore, if any given positive integer is not odd, it must be even.
 
 \subsection*{Part (b)}
@@ -45,6 +48,31 @@ Therefore, there cannot be an integer which is smaller than all other integers.
 This formulae is true, as 1 is not a prime number but is a natural number, therefore any prime natural number will be larger than it and not equal to it.
 
 \subsection*{Part (d)}
+\[ \forall x \in \mathbb{N}.((E(x) \land P(x)) \to Eq(x,2)) \]
 
+\subsection*{Part (e)}
+\[ \exists x \in \mathbb{Z}. \forall y \in \mathbb{Z}.(L(x,y) \land \neg L(x, 0)) \]
+
+\section*{Question 3}
+\subsection*{Part (a)}
+Consider an arbitrary \(x \in A\), then \(x \in (B \cup A)\) by the definition of union. 
+Therefore, \(x \in (A \cap (B \cup A))\) by the definition of the intersection, hence \(A \subseteq (A \cap (B \cup A))\).
+Consider an arbitrary \(x \in (A \cap (b \cup a)) \), then \(x \in (B \cup A)\) and \(x \in A\) by the definition of the intersection.
+Hence, \((A \cap (B \cup A)) \subseteq A\).
+Since \((A \cap (B \cup A)) \subseteq A\) and \(A \subseteq (A \cap (B \cup A))\), \((A \cap (B \cup A)) = A\)
+
+\subsection*{Part (b)}
+
+\section*{Question (4)}
+\subsection*{Part (a)}
+\(f\) is a non-invertible function, because if we assume there is an inverse of \(f=f^{-1}\), the codomain of \(f^{-1}\) would be \(\mathbb{Z}^{+}\), not \(\mathbb{N}\).
+
+\subsection*{Part (b)}
+\(g\) is an invertible function, and its inverse is \(g^{-1}=2-x\).
+
+\subsection*{Part (c)}
+\(h\) is a non-invertible function as it is not an injective function.
+An injective function is a function where each unique value in the domain has a unique value in the codomain.
+This is not true for \(h\), for example \(h(0) = -8 = h(-2)\).
 
 \end{document}
