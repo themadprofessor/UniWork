@@ -1,0 +1,17 @@
+N       data 7
+W       data 50
+weights data 31
+        data 10
+        data 20
+        data 19
+        data 4
+        data 3
+        data 6
+values  data 70
+        data 20
+        data 39
+        data 37
+        data 7
+        data 5
+        data 10
+stack   data 0

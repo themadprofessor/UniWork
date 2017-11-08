@@ -1,0 +1,13 @@
+N       data 5
+W       data 26
+weights data 12 
+        data 7
+        data 11
+        data 8
+        data 9
+values  data 24
+        data 13
+        data 23
+        data 15
+        data 16
+stack   data 0

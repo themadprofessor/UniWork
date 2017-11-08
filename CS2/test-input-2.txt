@@ -1,0 +1,17 @@
+N       data 7
+W       data 170
+weights data 41
+        data 50
+        data 49
+        data 59
+        data 55
+        data 57
+        data 60
+values  data 442
+        data 525
+        data 511
+        data 593
+        data 546
+        data 564
+        data 617
+stack   data 0

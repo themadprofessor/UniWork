@@ -1,0 +1,155 @@
+; A Sigma16 assembly program that implements both the recursive and dynamic
+; algorithms to solve the 0-1 Knapsack Problem.
+;
+; Given a set of items, each having a positive integer weight and a positive
+; integer value, and a maximum weight capacity, compute the maximum value you
+; can achieve by either including or excluding items from your solution. 
+;
+
+; Main program
+;    Sets up registers, calls knapsackRP(), knapsackDP(), prints results and terminates
+;
+; Register usage
+;    R1: N / result
+;    R2: W
+;    R3: pointer to weights
+;    R4: pointer to values
+;    R5: constant 0
+;    R13: return address
+;    R14: stack pointer
+; Structure of stack frame
+;    1[R14]   origin of next stack frame
+;    0[R14]   0 (no previous stack frame)
+main
+   lea   R14,stack[R0]    ; Initialise stack pointer
+   store R0,0[R14]        ; No previous stack frame
+   store R14,1[R14]       ; Pointer to beginning of current frame
+
+   load R1,N[R0]          ; R1 := N
+   load R2,W[R0]          ; R2 := W
+   lea R3,weights[R0]     ; R3 := weights
+   lea R4,values[R0]      ; R4 := values
+   add R5,R0,R0           ; R5 := constant 0 (= i for knapsackRP)
+
+   lea R14,1[R14]         ; Push stack pointer
+   jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
+   lea R14,1[R14]         ; Push stack pointer
+   jal R13,println[R0]    ; Call the println() function; param in R1
+
+   load R1,N[R0]          ; Restore N into R1 after it was overwritten by knapsackRP
+   lea R14,1[R14]         ; Push stack pointer
+   jal R13,knapsackDP[R0] ; Call the dynamic programming knapsack solution function
+   lea R14,1[R14]         ; Push stack pointer
+   jal R13,println[R0]    ; Call the println() function; param in R1
+
+   trap R0,R0,R0          ; Terminate
+
+;
+; function knapsackRP(N:R1, W:R2, weights:R3, values:R4, i:R5) -> return value:R1
+;
+; The basic recursive algorithm is:
+; int knapsackRP(int N, int W, int weights[], int values[], int i) {
+;    if (W == 0 || i >= N) // If out of capacity or out of items
+;       return 0;
+;    if (weights[i] > W) // If weight of current item above weight limit
+;       return knapsackRP(N, W, weights, values, i + 1); // Skip to next item
+;
+;    // Compute solution if the item is included
+;    int takeit = values[i] + knapsackRP(N, W - weights[i], weights, values, i + 1);
+;
+;    // Compute solution if the item is excluded
+;    int leaveit = knapsackRP(N, W, weights, values, i + 1);
+;
+;    return max(takeit, leaveit);
+; }
+;
+; Stack frame structure:
+;    <fill in your stack frame's structure...>
+;    1[R14]   return address (R13)
+;    0[R14]   pointer to previous stack frame
+;
+; Register usage:
+;    R1: N/result
+;    R2: W
+;    R3: pointer to weights
+;    R4: pointer to values
+;    R5: i
+;    <fill in your register usage...>
+;    R13: return address
+;    R14: stack pointer
+knapsackRP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; <fill in your code...> ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;
+; function knapsackDP(N:R1, W:R2, weights:R3, values:R4) -> return value:R1
+;
+; The dynamic programming algorithm is:
+; int knapsackDP(int N, int W, int weights[], int values[]) {
+;    int S[N+1][W+1]; // Allocate array as local variable
+;
+;    for (i = 0; i <= W; i++)
+;       S[0][i] = 0; // Solution for 0 items is 0
+;
+;    for (i = 1; i <= N; i++) // Loop over all items...
+;       for (w = 0; w <= W; w++) // and over all intermediate weight limits
+;          if (weights[i-1] > w) // If the current item doesn't fit...
+;             S[i][w] = S[i-1][w]; // then skip it...
+;          else
+;             // otherwise, compute the maximum of taking it or leaving it
+;             S[i][w] = max(S[i-1][w], S[i-1][w-weights[i-1]] + values[i-1]);
+;    return S[N][W];
+; }
+;
+; Stack frame structure:
+;    <fill in your stack frame's structure...>
+;    1[R14]   return address (R13)
+;    0[R14]   pointer to previous stack frame
+;
+; Register usage:
+;    R1: N/result
+;    R2: W
+;    R3: pointer to weights
+;    R4: pointer to values
+;    <fill in your register usage...>
+;    R13: return address
+;    R14: stack pointer
+knapsackDP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; <fill in your code...> ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+; Function println(num:R1)
+;    Converts the value in R1 to printable decimal digits and prints it on screen
+;
+; Stack frame structure:
+;    <fill in your stack frame's structure...>
+;    0[R14]   pointer to previous stack frame
+;
+; Register usage:
+;    R1: input number
+;    <fill in your register usage...>
+;    R13: return address
+;    R14: stack pointer
+println
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; <fill in your code...> ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Data segment
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; <Copy-paste the provided inputs here; below input provided for testing purposes...> ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+N       data 3
+W       data 5
+weights data 1
+        data 2
+        data 3
+values  data 4
+        data 3
+        data 5
+stack   data 0
