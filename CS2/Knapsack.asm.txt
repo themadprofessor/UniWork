@@ -128,17 +128,67 @@ knapsackDP
 ;
 ; Stack frame structure:
 ;    <fill in your stack frame's structure...>
+;    1..(len of num in decimal) char stack 
 ;    0[R14]   pointer to previous stack frame
 ;
 ; Register usage:
 ;    R1: input number
-;    <fill in your register usage...>
+;    R2: base to convert to (10)
+;    R3: current modulo base
+;    R4: length of string
+;    R5: modulo value | constant 1 for decrementation of string stack pointer | constant 2 for print trap
+;    R6: stack reversal into array array pointer
+;    R7: minimum string stack pointer
+;    R8: current stack value
+;    R9: ASCII value for 0 (48)
+;    R10: string array pointer
+;    R11: string stack pointer
+;    R12: comparison results
 ;    R13: return address
 ;    R14: stack pointer
+
+; TODO: reduce number of registers used be reusing registers after decode, save used registers to stack before starting function and restoring after
+
 println
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; <fill in your code...> ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Initialise variables for decoding
+    lea R12,1[R14];init string stack pointer
+    lea R2,10[R0]
+    lea R9,48[R0]
+    add R3,R0,R2  ;set initial modulo base to 10
+    lea R11,1[R14]
+    add R4,R0,R0  ;set initial length to 0
+; Iterate of all powers of ten less than input number, storing the storing the difference
+; from input number and the power of ten at string stack point, subtracting said difference
+; and incrementing the string length each iteration each iteration
+decode 
+    cmp R12,R3,R1
+    jumplt R12,endDecode[R0]
+    div R5,R1,R3  ;next 4 lines find R1 % R3
+    mul R5,R5,R3
+    sub R5,R1,R5
+    sub R1,R1,R5  ;Remove found modulo from number
+    store R5,0[R11]
+    lea R12,1[R11];Push string stack pointer
+    add R3,R3,R2
+    jump decode[R0]
+endDecode
+    lea R5,1[R0]
+    lea R10,1[R11];set initial string array pointer
+    add R6,R10,R0 ;set initial stack reversal into array array pointer 
+    lea R14,1[R14];set minimum string stack pointer
+flip
+    cmp R12,R14,R11
+    jumpeq R12,endFlip[R0]
+    load R8,0[R11]
+    add R8,R8,R9
+    store R8,0[R6]
+    add R6,R6,R5
+    sub R11,R11,R6
+    jump flip[R0]
+endFlip
+    lea R5, 2[R0]
+    trap R5,R10,R4
+    
 
 ; Data segment
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
