@@ -34,33 +34,29 @@
 ;    1[R14]   origin of next stack frame
 ;    0[R14]   0 (no previous stack frame)
 main ;Line 23
-   lea   R14,stack[R0]    ; Initialise stack pointer
-   store R0,0[R14]        ; No previous stack frame
-   store R14,1[R14]       ; Pointer to beginning of current frame
+    lea   R14,stack[R0]    ; Initialise stack pointer
+    store R0,0[R14]        ; No previous stack frame
+    store R14,1[R14]       ; Pointer to beginning of current frame
 
-   load R1,N[R0]          ; R1 := N
-   load R2,W[R0]          ; R2 := W
-   lea R3,weights[R0]     ; R3 := weights
-   lea R4,values[R0]      ; R4 := values
-   add R5,R0,R0           ; R5 := constant 0 (= i for knapsackRP)
+    load R1,N[R0]          ; R1 := N
+    load R2,W[R0]          ; R2 := W
+    lea R3,weights[R0]     ; R3 := weights
+    lea R4,values[R0]      ; R4 := values
+    add R5,R0,R0           ; R5 := constant 0 (= i for knapsackRP)
 
-   lea R14,1[R14]
-   lea R1,34[R0]
-   jal R13,println[R0]
-   trap R0,R0,R0
+    lea R14,1[R14]         ; Push stack pointer
+    jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
+    lea R14,1[R14]         ; Push stack pointer
+    jal R13,println[R0]    ; Call the println() function; param in R1
+    trap R0,R0,R0
 
-   lea R14,1[R14]         ; Push stack pointer
-   jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
-   lea R14,1[R14]         ; Push stack pointer
-   jal R13,println[R0]    ; Call the println() function; param in R1
+    load R1,N[R0]          ; Restore N into R1 after it was overwritten by knapsackRP
+    lea R14,1[R14]         ; Push stack pointer
+    jal R13,knapsackDP[R0] ; Call the dynamic programming knapsack solution function
+    lea R14,1[R14]         ; Push stack pointer
+    jal R13,println[R0]    ; Call the println() function; param in R1
 
-   load R1,N[R0]          ; Restore N into R1 after it was overwritten by knapsackRP
-   lea R14,1[R14]         ; Push stack pointer
-   jal R13,knapsackDP[R0] ; Call the dynamic programming knapsack solution function
-   lea R14,1[R14]         ; Push stack pointer
-   jal R13,println[R0]    ; Call the println() function; param in R1
-
-   trap R0,R0,R0          ; Terminate
+     trap R0,R0,R0          ; Terminate
 
 ;
 ; function knapsackRP(N:R1, W:R2, weights:R3, values:R4, i:R5) -> return value:R1
@@ -83,6 +79,9 @@ main ;Line 23
 ;
 ; Stack frame structure:
 ;    <fill in your stack frame's structure...>
+;    4[R14]   result if item taken
+;    3[R14]   current W
+;    2[R14]   current N
 ;    1[R14]   return address (R13)
 ;    0[R14]   pointer to previous stack frame
 ;
@@ -92,14 +91,72 @@ main ;Line 23
 ;    R3: pointer to weights
 ;    R4: pointer to values
 ;    R5: i
+;    R6: weights[i] pointer | values[i] pointer| result if taken 
+;    R7: weights[i] value
+;    R8: values[i] value
 ;    <fill in your register usage...>
+;    R12: comparison results
 ;    R13: return address
 ;    R14: stack pointer
 knapsackRP
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; <fill in your code...> ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    store R14,0[R14]
+    store R13,1[R14]
 
+; if (W==0||i>=N) goto return0
+    cmpeq R12,R2,R0
+    jumpt R12,return0[R0]
+    cmplt R12,R5,R1
+    jumpf R12,return0[R0]
+
+; if (weights[i]>W) goto skip
+    add R6,R3,R5
+    load R7,0[R6]
+    cmpgt R12,R6,R2
+    jumpt R12,skip[R0]
+
+; else
+; take item
+    store R1,2[R14]; store current N
+    store R2,3[R14]; store current W
+    add R6,R0,R4   
+    add R6,R6,R5
+    load R8,0[R6]  ; values[i]
+    sub R2,R2,R7   ; W-weights[i]
+    lea R5,1[R5]   ; increment i
+    lea R14,4[R14] ; push stack
+    jal R13,knapsackRP[R0] ; call knapsackRP as if we take the item
+    add R1,R1,R8
+
+; leave item
+    load R2,3[R14] ; get current W
+    store R1,4[R14]; store result if taken
+    load R1,2[R14] ; get current N
+    jal R13,knapsackRP[R0]; call knapsackRP as if we don't take the item
+    load R6,4[R14] ; get result if taken
+
+    ;if (taken > left) set result to take, then goto return
+    cmplt R12,R1,R6
+    jumpf R12,return[R0]
+    add R1,R6,R0
+return
+    load R13,1[R14]
+    load R14,0[R14]
+    jump 0[R13]
+
+return0
+    add R1,R0,R0
+    jump return[R0]
+
+skip
+    lea R5,1[R5]
+    store R1,2[R14]; store current N
+    store R2,3[R14]; store current W
+    lea R14,4[R14]
+    jal R13,knapsackRP[R0]
+    load R1,2[R14]
+    load R2,3[R14]
+    jump return[R0]
+     
 
 ;
 ; function knapsackDP(N:R1, W:R2, weights:R3, values:R4) -> return value:R1
@@ -145,8 +202,8 @@ knapsackDP
 ;    Converts the value in R1 to printable decimal digits and prints it on screen
 ;
 ; Stack frame structure:
-;    <fill in your stack frame's structure...>
-;    1..(len of num in decimal) char stack 
+;    (1+(num of base 10 digits))..(1+(2*(num of base 10 digits))) charArray
+;    1..(num of base 10 digits) charStack 
 ;    0[R14]   pointer to previous stack frame
 ;
 ; Register usage:
@@ -162,8 +219,6 @@ knapsackDP
 ;    R13: return address
 ;    R14: stack pointer
 
-; TODO: reduce number of registers used be reusing registers after decode, save used registers to stack before starting function and restoring after
-
 println
 ; Setup stack frame
     store R2,1[R14]
@@ -175,7 +230,7 @@ println
     store R11,7[R14]
     store R12,8[R14]
 ; Initialise variables for decoding
-    lea R11,1[R14] ;init string stack pointer
+    lea R11,9[R14] ;init string stack pointer
     lea R2,10[R0]
 
 ; Iterate of all powers of ten less than input number, storing the storing the difference
@@ -194,11 +249,12 @@ decode
 endDecode
     store R1,0[R11];Append last digit
     lea R11,1[R11] ;increment charStack pointer
-    sub R3,R11,R14 ;Length of string is the difference in the stack pointer and the pointer to the last digit
+    sub R3,R11,R14 ;Length of string is the difference in the stack pointer and the pointer to the last digit + 8
+    lea R3,8[R3]
     lea R5,1[R0]
     add R10,R0,R11 ;set initial string array pointer
     add R1,R10,R0  ;set initial stack reversal into array array pointer 
-    lea R4,1[R14] ;set minimum string stack pointer
+    lea R4,9[R14] ;set minimum string stack pointer
 
 ; Iterate in reverse over the string stack, moving each value into string array: inverting the string
 flip
