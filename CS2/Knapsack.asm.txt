@@ -44,11 +44,11 @@ main ;Line 23
     lea R4,values[R0]      ; R4 := values
     add R5,R0,R0           ; R5 := constant 0 (= i for knapsackRP)
 
-    lea R14,1[R14]         ; Push stack pointer
-    jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
-    lea R14,1[R14]         ; Push stack pointer
-    jal R13,println[R0]    ; Call the println() function; param in R1
-    trap R0,R0,R0
+    ;lea R14,1[R14]         ; Push stack pointer
+    ;jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
+    ;lea R14,1[R14]         ; Push stack pointer
+    ;jal R13,println[R0]    ; Call the println() function; param in R1
+    ;trap R0,R0,R0
 
     load R1,N[R0]          ; Restore N into R1 after it was overwritten by knapsackRP
     lea R14,1[R14]         ; Push stack pointer
@@ -56,7 +56,7 @@ main ;Line 23
     lea R14,1[R14]         ; Push stack pointer
     jal R13,println[R0]    ; Call the println() function; param in R1
 
-     trap R0,R0,R0          ; Terminate
+    trap R0,R0,R0          ; Terminate
 
 ;
 ; function knapsackRP(N:R1, W:R2, weights:R3, values:R4, i:R5) -> return value:R1
@@ -188,22 +188,121 @@ skip
 ;    R2: W
 ;    R3: pointer to weights
 ;    R4: pointer to values
-;    <fill in your register usage...>
+;    R5: i
+;    R6: effective address of S[0][i] | w
+;    R7: i - 1 | effective address of S[i][w]
+;    R8: effective address of S[i-1][w] | w-weights[i-1]] | values[i-1] | S[i-1][w] | value to store at S[i][w]
+;    R9: effective address of S[i-1][w-weights[i-1]] | S[i-1][w-weights[i-1]] + values[i-1] | effective address of S[i][w]
+;    R10: constant 1
+;    R11: pointer to S
+;    R12: comparison results
 ;    R13: return address
 ;    R14: stack pointer
 knapsackDP
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; <fill in your code...> ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; setup stack frame
+     store R5,1[R14]
+     store R6,2[R14]
+     store R7,3[R14]
+     store R8,4[R14]
+     store R9,5[R14]
+     store R10,6[R14]
+     store R11,7[R14]
+     store R12,8[R14]
 
+     lea R11,1[R14] ; init S
+     add R5,R0,R0   ; init i
 
+; populate solutions of 0 items with 0
+loop0
+     cmplt R12,R5,R2
+     jumpf break0
+     add R6,R11,R5
+     store R0,0[R16]
+     jump loop0
+
+break0
+     lea R5,1[R0]
+
+; iterate of the number of items to consider
+loopN
+     cmplt R12,R5,R1
+     jumpf R12,breakN[R0]
+     add R6,R0,R0
+
+; iterate of item weights
+loopW
+     cmplt R12,R6,R2
+     jumpf R12,loopN[R0]
+     sub R7,R5,R10
+     add R8,R7,R3
+     store R8,0[R8]
+     cmpgt R12,R8,R6
+     jumpf R12,else[R0]
+
+; if it doesn't fit, skip it
+     ;mul R8,R7,R2
+     add R8,R8,R6
+     load R8,0[R8]
+     mul R7,R5,R2
+     add R7,R7,R6
+     store R8,0[R7]
+     jump loopW[R0]
+
+; otherwise, compute if its better to take it or leave it
+else
+; calc S[i-1][w-weights[i-1]] + values[i-1]
+     add R8,R3,R7
+     load R8,0[R8]
+     sub R8,R6,R8
+     mul R9,R7,R1
+     add R9,R9,R8
+     add R9,R9,R11
+     load R9,0[R9]
+     add R8,R4,R7
+     load R8,0[R8]
+     add R9,R9,R8
+
+; get S[i-1][w]
+     mul R8,R7,R1
+     add R8,R8,R6
+     add R8,R8,R11
+     load R8,0[R8]
+    
+     cmpgt R12,R8,R9
+     jumpt R12,store[R0]
+     add R8,R9,R0
+store
+     mul R9,R5,R1
+     add R9,R9,R6
+     add R9,R9,R11
+     store R8,0[R9]
+     jump loopW[R0]
+
+breakN
+     mul R6,R1,R1
+     add R6,R6,R2
+     add R6,R6,R11
+     store R1,0[R6]     
+; cleanup stack
+     load R5,1[R14]
+     load R6,2[R14]
+     load R7,3[R14]
+     load R8,4[R14]
+     load R9,5[R14]
+     load R10,6[R14]
+     load R11,7[R14]
+     load R12,8[R14]
+
+     load R14,0[R14]
+     jump 0[R13]
 
 ; Function println(num:R1)
 ;    Converts the value in R1 to printable decimal digits and prints it on screen
 ;
 ; Stack frame structure:
-;    (1+(num of base 10 digits))..(1+(2*(num of base 10 digits))) charArray
-;    1..(num of base 10 digits) charStack 
+;    (1+(num of base 10 digits))[R14]..(1+(2*(num of base 10 digits)))[R14] charArray
+;    8[R14]..(num of base 10 digits)[R14] charStack 
+;    1[R14]..7[R14] caller's R2-R6 and R10-R12 registers in that order
 ;    0[R14]   pointer to previous stack frame
 ;
 ; Register usage:
@@ -250,7 +349,7 @@ endDecode
     store R1,0[R11];Append last digit
     lea R11,1[R11] ;increment charStack pointer
     sub R3,R11,R14 ;Length of string is the difference in the stack pointer and the pointer to the last digit + 8
-    lea R3,8[R3]
+    lea R3,-8[R3]
     lea R5,1[R0]
     add R10,R0,R11 ;set initial string array pointer
     add R1,R10,R0  ;set initial stack reversal into array array pointer 
@@ -268,9 +367,9 @@ flip
     jump flip[R0]
 endFlip
 ; Append newline to string array, print string array and return
-    add R3,R10,R3
+    add R4,R10,R3
     sub R3,R3,R5
-    store R2,0[R3]
+    store R2,0[R4]
     lea R5,2[R0]
     trap R5,R10,R3
 
