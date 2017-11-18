@@ -1,0 +1,202 @@
+%%%%% DO NOT EDIT HERE. SCROLL DOWN TO SEE THE SECTIONS, WHICH YOU HAVE TO EDIT %%%%%
+\documentclass[answers,addpoints,12pt]{exam}
+\usepackage{a4wide,amsmath,amssymb,graphicx}
+
+\marksnotpoints
+\pointsinrightmargin
+\bracketedpoints
+
+\newcommand{\sectionline}{%
+  \nointerlineskip \vspace{\baselineskip}%
+  \hspace{\fill}\rule{\linewidth}{2pt}\hspace{\fill}%
+  \par\nointerlineskip \vspace{\baselineskip}
+}
+
+\pagestyle{myheadings}
+\markright{AF2 - Assessed Exercise 2}
+
+\usepackage{pdfpages}
+\begin{document}
+  \includepdf[pages={1}]{af2_assessed_exercise2.pdf}
+
+  \thispagestyle{empty}
+  \vskip24pt
+  \begin{center}
+  {\huge\textbf{Algorithmic Foundations 2}}
+  \\[2ex] {\Large \textbf{Assessed Exercise 2}}
+  \end{center}
+  \vskip24pt
+  \sectionline
+  \noindent
+  {\large {\bf Notes for guidance}}
+  \begin{enumerate}
+    \item
+    This is the second of the two assessed exercises. It is worth 10\% of your final grade for this module. Your answers must be the result of your own individual efforts.
+    \item
+    Submit your answers to the appropriate labelled collection box outside the Teaching Office, room F161, first floor of 18 Lilybank Gardens.
+    \item
+    Please use the coversheet of the exercise as a coversheet for your answers after filling in your tutorial group, name and student id. {\bf Failure to follow these instructions will lead to a penalty for non-adherence to submission instructions of 2 bands.}
+    \item
+    Your answers need not be word-processed; however handwritten answers must be legible.
+    \item
+    As stated on the cover sheet deadline for completing this assessed exercise is {\bf 16:30 Monday 20th November, 2017}.
+    \item
+    You must complete the online “Declaration of Originality” form on the LTC website.
+    \item
+    The exercise is marked out of 30 using the included marking scheme. Credit will be given for partial answers.
+  \end{enumerate}
+  \sectionline
+  \newpage
+  %%%%% QUESTIONS BEGIN HERE. PLEASE EDIT INDICATED SECTIONS %%%%%
+  \begin{questions}
+    \question[4]
+      Let $a$ and $b$ be integers and let $m$ be a positive integer.  Show that $a \equiv b \pmod{m}$ if and only if $a \pmod{m} = b \pmod{m}$. Explain your steps.
+    \begin{solution}
+      %%%%% YOUR SOLUTION TO QUESTION 1 GOES HERE >>>>>
+      Remember that the dollar sign \$ acts as a bracket, which allows you to enter and leave math mode.
+      Some features of latex are only available inside the math mode. Your solution should include a good balance of mathematical equations and English commentary.
+           
+      This is how you can typeset a remainder from division by m: $a \pmod{m} = b \pmod{m}$
+      
+      This is how you can typeset a multiplication symbol: $\cdot$
+      
+      This is how you can typeset a sequence of arithmetic operations linked with an equality operator, and include the important commentary for each step:
+      
+      \begin{align*}
+        a & = a     & \mbox{by reflexivity of equality} \\
+          & = 0 + a & \mbox{by additive identity} \\
+      \end{align*}
+      
+      This is how you can typeset ``a divides b'': $a | b$
+      
+      This is how you can typeset the triple equality symbol, and various left and right inequalities: $\equiv$, $\leq$, $<$, $>$, $\geq$
+      
+      
+      Do not worry if your solution doesn't use these symbols, or uses other symbols.
+      There are many different ways to solve each task, which may all use slightly different terminology.
+      
+      The source latex file and pdf for a selection of proofs taken from the tutorial exercises on moodle should also help with typesetting each of your answers.
+      
+      Please delete this entire note, and replace it with the actual solution before submitting!
+      %%%%% YOUR SOLUTION TO QUESTION 1 ENDS HERE <<<<<
+    \end{solution}
+    
+    \vskip24pt
+    \question[2]
+    Using the Euclidean Algorithm, find $\gcd(1529,14038)$. Show your working.
+    \begin{solution}
+	    \begin{eqnarray*}
+		    14038 &=& 9  \cdot 1529 + 277 \\
+		    1529  &=& 5  \cdot 277  + 144 \\
+		    277   &=& 1  \cdot 144  + 133 \\
+		    144   &=& 1  \cdot 133  + 11  \\
+		    133   &=& 12 \cdot 11   + 1   \\
+		    11    &=& 1  \cdot 11   + 0   \\
+
+	    \end{eqnarray*}
+
+	    Since 1 is the last remainder which is non-zero, $\gcd(1529,14038) = 1$
+    \end{solution}
+    \question[5]
+    Using the universe of all students, write out the following argument using quantifiers, connectives, and symbols to stand for propositions as necessary, explaining which rules of inference are used for each step. 
+
+    \begin{quote}
+    ``All $\mathit{AF2}$ students are second years.  There exists a $\mathit{AF2}$ student from Glasgow.  Therefore, there is a second year student from Glasgow.''
+    \end{quote}
+    {\bf Note:} there can be more than one student from Glasgow and this must be reflected in the construction of your argument.
+    \begin{solution}
+      %%%%% YOUR SOLUTION TO QUESTION 3 BEGINS HERE >>>>>
+      In this question you may want to use the align environment as in question 1. 
+
+      Logical connectives and quantifiers can be typeset like this: $\exists$, $\forall$, $\land$, $\lor$.
+
+      For propositions inside math mode, you can use the following notation: $\mathit{AF}(x)$.
+      
+Please delete this entire note, and replace it with the actual solution before submitting!
+      %%%%% YOUR SOLUTION TO QUESTION 3 ENDS HERE <<<<<
+    \end{solution}
+    
+    \vskip24pt
+    \question[3]
+        
+    The $n {\times} n$ matrix $A$ is called a \emph{diagonal matrix} if $a_{i,j}=0$ for all $1 {\leq} i {\neq} j {\leq} n$.
+    \\ \\
+    Show that the product of two $n {\times} n$ diagonal matrices is diagonal and give an simple expression for the diagonal values of the product.
+    \begin{solution}
+      %%%%% YOUR SOLUTION TO QUESTION 4 BEGINS HERE >>>>>
+      To typeset matrix multiplication you can use $\times$, to typeset subscripts, you can use $a_{i, j}$. For superscripts, you can use $a^{i, j}$.
+
+      For the finite summation and product operators, you can use respectively $\sum_{i=0}^{10}$ and $\prod_{i=0}^{10}$.
+      
+      Please delete this entire note, and replace it with the actual solution before submitting!
+      %%%%% YOUR SOLUTION TO QUESTION 4 ENDS HERE <<<<<
+    \end{solution}
+    \vskip24pt
+    \question[5]
+    
+    Show that $\sqrt{n}$ is irrational if $n$ is a positive integer that is not a perfect square.
+
+    {\bf Note}: an integer $n$ is a perfect square if $n=k^2$ for some integer $k$.  
+    {\bf Hint:} use a proof by contradiction, together with the Fundamental Theorem of Arithmetic considering the powers of the primes in the product.
+    \begin{solution}
+      %%%%% YOUR SOLUTION TO QUESTION 5 BEGINS HERE >>>>>
+      To typeset a square root, you can use $\sqrt{n}$.
+      
+      Please delete this entire note, and replace it with the actual solution before submitting!
+      %%%%% YOUR SOLUTION TO QUESTION 5 ENDS HERE <<<<<
+    \end{solution}
+    \question[5]
+    The Fibonacci numbers $f_0, f_1, f_2,\dots$ and Lucas numbers $l_0, l_1, l_2, \dots$ are defined by the equations:
+    \begin{itemize}
+    \item
+    $f_0=0$, $f_1=1$ and $f_n = f_{n-1} {+} f_{n-2}$ for all $n\geq 2$;
+    \item
+    $l_0=2$, $l_1=1$ and $l_n = l_{n-1} {+} l_{n-2}$ for all $n\geq 2$
+    \end{itemize}
+    respectively. Prove that $f_{n} {+} f_{n+2} = l_{n+1}$ for all $n\geq 1$.
+    \begin{solution}
+      %%%%% YOUR SOLUTION TO QUESTION 6 BEGINS HERE >>>>>
+      The symbols required for this question have already been covered. 
+      
+      Please delete this entire note, and replace it with the actual solution before submitting!
+      %%%%% YOUR SOLUTION TO QUESTION 6 ENDS HERE >>>>>
+    \end{solution}
+    \vskip24pt
+    \question
+    The set of bit strings $\mathbb{B}^*$ are be defined recursively by:
+    \begin{itemize}
+    \item
+    $\varepsilon \in \mathbb{B}^*$ (where $\varepsilon$ is the empty string);
+    \item
+    if $w \in \mathbb{B}^*$ and $x \in \{0,1\}$, then $wx \in \mathbb{B}^*$. 
+    \end{itemize}
+    We can define concatenation of two bit strings denoted ${+}{+}$, recursively as follows:
+    \begin{itemize}
+    \item
+    if $w \in \mathbb{B}^*$, then $w {+}{+} \varepsilon = w$;
+    \item
+    if $w,v \in \mathbb{B}^*$ and $x \in \{0,1\}$, then $w{+}{+}(vx) = (w{+}{+}v)x$. 
+    \end{itemize}
+    {\bf Notice the difference in the above recursive definitions and those given for strings in the lectures. Then consider how this will influence how to prove properties of bit strings by structural induction.}
+    \begin{parts}
+    \part[2]
+    Give a recursive definition of the function $\mathtt{ones} : \mathbb{B}^* \rightarrow \mathbb{N}$ which counts the number of ones in a bit string.
+    \begin{solution}
+      %%%%% YOUR SOLUTION TO QUESTION 7a BEGINS HERE >>>>>
+      You can refer to the function from the description of the task as $\mathtt{ones}$, the set of bit strings as $\mathbb{B}^*$. 
+      
+      Please delete this entire note, and replace it with the actual solution before submitting!
+      %%%%% YOUR SOLUTION TO QUESTION 7a ENDS HERE >>>>>
+    \end{solution}
+    \part[4]
+    Use structural induction to prove that $\mathtt{ones}(w{+}{+}v) = \mathtt{ones}(w) + \mathtt{ones}(v)$ for all $w, v \in \mathbb{B}^*$.
+    \begin{solution}
+      %%%%% YOUR SOLUTION TO QUESTION 7b BEGINS HERE >>>>>
+      You can refer to the function from the description of the task as $\mathtt{ones}$, the set of bit strings as $\mathbb{B}^*$. 
+      
+      Please delete this entire note, and replace it with the actual solution before submitting!
+      %%%%% YOUR SOLUTION TO QUESTION 7b ENDS HERE >>>>>
+    \end{solution}
+    \end{parts}
+  \end{questions}
+\end{document}
