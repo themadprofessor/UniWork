@@ -92,10 +92,9 @@
 		    144   &=& 1  \cdot 133  + 11  \\
 		    133   &=& 12 \cdot 11   + 1   \\
 		    11    &=& 1  \cdot 11   + 0   \\
-
 	    \end{eqnarray*}
 
-	    Since 1 is the last remainder which is non-zero, $\gcd(1529,14038) = 1$
+	    Since 1 is the last remainder which is non-zero, $\gcd(1529,14038) = 1$.
     \end{solution}
     \question[5]
     Using the universe of all students, write out the following argument using quantifiers, connectives, and symbols to stand for propositions as necessary, explaining which rules of inference are used for each step. 
@@ -105,6 +104,12 @@
     \end{quote}
     {\bf Note:} there can be more than one student from Glasgow and this must be reflected in the construction of your argument.
     \begin{solution}
+	    \begin{align*}
+		    G              &= \text{the set of all students at Glasgow} \\
+		    \mathit{AF}(x) &= \text{x takes AF2} \\
+		    \mathit{S}(x)  &= \text{x is in second year} \\
+            \end{align*}
+	    $$\forall x.G(\mathit{AF}(x) \to \mathit{S}(x))$$
       %%%%% YOUR SOLUTION TO QUESTION 3 BEGINS HERE >>>>>
       In this question you may want to use the align environment as in question 1. 
 
@@ -123,6 +128,12 @@ Please delete this entire note, and replace it with the actual solution before s
     \\ \\
     Show that the product of two $n {\times} n$ diagonal matrices is diagonal and give an simple expression for the diagonal values of the product.
     \begin{solution}
+	    Let $A$,$B$ be \(n \times n\) diagonal matrices, meaning \(a_{i,j}=b_{i,j}=0\) for all \(1 \leq i \neq j \leq n\).
+	    So,
+	    \(A \times B = C = [c_{i,j}] \equiv [\sum_{r=1}^{n} a_{i,r} \cdot b_{r,j}]\)
+	    Since, when \(i \neq j\), \(a_{i,r}=b_{r,j}i=0\), it follows \(a_{i,r} \cdot b_{r,j}=0\) when \(i \neq j\).
+	    Therefore only the values \(a_{i,r}\) and \(b_{j,r}\) are needed when \(i=j\), so \(C\) is diagonal.\\\\
+	    The diagonal of \(C\) is defined as \(c_{i,j} = a_{i,j} \cdot b_{i,j}\) for all \(1 \leq i=j \leq n\).
       %%%%% YOUR SOLUTION TO QUESTION 4 BEGINS HERE >>>>>
       To typeset matrix multiplication you can use $\times$, to typeset subscripts, you can use $a_{i, j}$. For superscripts, you can use $a^{i, j}$.
 
