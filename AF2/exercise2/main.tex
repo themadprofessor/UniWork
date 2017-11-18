@@ -151,10 +151,18 @@ Please delete this entire note, and replace it with the actual solution before s
     {\bf Hint:} use a proof by contradiction, together with the Fundamental Theorem of Arithmetic considering the powers of the primes in the product.
     \begin{solution}
       %%%%% YOUR SOLUTION TO QUESTION 5 BEGINS HERE >>>>>
-      To typeset a square root, you can use $\sqrt{n}$.
-      
-      Please delete this entire note, and replace it with the actual solution before submitting!
-      %%%%% YOUR SOLUTION TO QUESTION 5 ENDS HERE <<<<<
+      Suppose $n$ is a perfect square and \(\sqrt{n}\) is irrational.
+      This means there exists \(k \in \mathbb{Z}\) such that \(n=k^2\) and there does not exists \(a,b \in \mathbb{Z}\) where \(a \neq b\) and \(b \neq 0\) where \(\sqrt{n}=a/b\).
+
+      \begin{align*}
+	      n &= k^2 & & \\
+	        &= (\prod_{u=0}^{v}p_{u}^{w_u})^2 \text{ where } & &u,v,w \in \mathbb{Z}^+ \\
+	        &                                                & &\text{and } p_i \text{ is a prime such that } p_{i-1} < p_i < p_{i+1} \\
+		& & &\text{using the Fundamental Theorem of Arithmetic} \\
+	      \sqrt{m} &= \prod_{u=0}^{v}p_{u}^{w_u} & \\
+      \end{align*}
+      This means \(\sqrt{n}\) can be written as a product of primes which implies it is an integer, so \(\sqrt{n}\) is rational.
+      This is a contradiction, hence \(\sqrt{n}\) is irrational if $n$ is not a perfect square.
     \end{solution}
     \question[5]
     The Fibonacci numbers $f_0, f_1, f_2,\dots$ and Lucas numbers $l_0, l_1, l_2, \dots$ are defined by the equations:
@@ -193,20 +201,28 @@ Please delete this entire note, and replace it with the actual solution before s
     \part[2]
     Give a recursive definition of the function $\mathtt{ones} : \mathbb{B}^* \rightarrow \mathbb{N}$ which counts the number of ones in a bit string.
     \begin{solution}
-      %%%%% YOUR SOLUTION TO QUESTION 7a BEGINS HERE >>>>>
-      You can refer to the function from the description of the task as $\mathtt{ones}$, the set of bit strings as $\mathbb{B}^*$. 
-      
-      Please delete this entire note, and replace it with the actual solution before submitting!
-      %%%%% YOUR SOLUTION TO QUESTION 7a ENDS HERE >>>>>
+	    If \(\varepsilon \in \mathtt{B}*\), then \(\mathtt{ones}(\varepsilon)=0\)\\
+	    If \(w \in \mathtt{B}*, x \in [0,1]\), then \(\mathtt{ones}(wx)=\mathtt{ones}(w) + 1\)
     \end{solution}
     \part[4]
     Use structural induction to prove that $\mathtt{ones}(w{+}{+}v) = \mathtt{ones}(w) + \mathtt{ones}(v)$ for all $w, v \in \mathbb{B}^*$.
     \begin{solution}
-      %%%%% YOUR SOLUTION TO QUESTION 7b BEGINS HERE >>>>>
-      You can refer to the function from the description of the task as $\mathtt{ones}$, the set of bit strings as $\mathbb{B}^*$. 
-      
-      Please delete this entire note, and replace it with the actual solution before submitting!
-      %%%%% YOUR SOLUTION TO QUESTION 7b ENDS HERE >>>>>
+	    Let \(w=\varepsilon\)
+	    \begin{align*}
+		    \mathtt{ones}(\varepsilon {+}{+} w) &= \mathtt{ones}(w) & \text{by defintion}\\
+		                                        &= 0 + \mathtt{ones}(w) & \text{rearranging} \\
+			                                &= \mathtt{ones}(\varepsilon) + \mathtt{ones}(w) & \text{by defintion of \(\mathtt{ones}(\varepsilon)\)} \\
+	    \end{align*}
+	    Let \(w,v \in \varepsilon\), \(x \in \varepsilon\) and \(v=v'x\).
+	    \begin{align*}
+		    \text{lhs} &= \mathtt{ones}(w{+}{+}) & \\
+		               &= \mathtt{ones}(w{+}{+}(v'x)) & \\
+			       &= \mathtt{ones}((w{+}{+}v')x) & \text{by defintion of concationation} \\
+			       &= \mathtt{ones}(w{+}{+}v') + 1  & \text{by defintion of $\mathtt{ones}$} \\
+			       &= \mathtt{ones}(w)+\mathtt{ones}(v')+1 & \text{by inductive hypothesis} \\
+			       &= \mathtt{ones}(w)+\mathtt{ones}(v) & \text{by definitions of $\mathtt{ones}$ and \(v=v'x\)} \\
+			       &= \text{rhs} & \\
+	    \end{align*}
     \end{solution}
     \end{parts}
   \end{questions}
