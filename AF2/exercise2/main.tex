@@ -174,11 +174,24 @@ Please delete this entire note, and replace it with the actual solution before s
     \end{itemize}
     respectively. Prove that $f_{n} {+} f_{n+2} = l_{n+1}$ for all $n\geq 1$.
     \begin{solution}
-      %%%%% YOUR SOLUTION TO QUESTION 6 BEGINS HERE >>>>>
-      The symbols required for this question have already been covered. 
-      
-      Please delete this entire note, and replace it with the actual solution before submitting!
-      %%%%% YOUR SOLUTION TO QUESTION 6 ENDS HERE >>>>>
+	    Let $P(n)$ be the proposition that $f_{n} {+} f_{n+2} = l_{n+1}$ for all $n\geq 1$.\\
+	    Base case: $P(1)$ is true since,
+	    \begin{align*}
+		    f_1 + f_3     &= l_2   & \\
+		    1+f_1 +f_0 +1 &= 1 + 2 & \text{by definition of }f_n \text{ and } l_n \\
+		    1+1+0+1       &= 1+2   & \text{by definition of }f_0 \text{ and } f_1 \\
+		    3             &= 3     & \\
+	    \end{align*}
+	    Inductive step: Assume $P(k)$ is true for some arbitary $k$. Now considering $k+1$ we have:
+	    \begin{align*}
+		    \text{lhs} &= f_{k+1} + f_{k+3} & \\
+		               &= f_k + f_{k-1} + f_{k+2} + f_{k+1} & \text{by definition of }f_n \\
+			       &= (f_k + f_{k+2}) + (f_{k-1} + f_{k+1} & \text{rearranging} \\
+			       &= l_{k+1} + l_k                        & \text{by the inductive hypothosis} \\
+			       &= l_{k+2}                              & \text{by definition of }l_n \\
+			       &= \text{rhs} & \\
+	    \end{align*}
+	    Therefore by the principle of induction we have proved $P(n)$ for all $n\geq 1$.
     \end{solution}
     \vskip24pt
     \question
