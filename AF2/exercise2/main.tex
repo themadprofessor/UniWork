@@ -52,6 +52,10 @@
     \question[4]
       Let $a$ and $b$ be integers and let $m$ be a positive integer.  Show that $a \equiv b \pmod{m}$ if and only if $a \pmod{m} = b \pmod{m}$. Explain your steps.
     \begin{solution}
+	    \begin{align*}
+		    a \equiv b \pmod{m} &\implies a \pmod{m} = (b \pmod {m}) \pmod{m} \\
+		                        &\implies a \pmod{m} = b \pmod{m} \\
+	    \end{align*}
     \end{solution}
     
     \vskip24pt
@@ -116,7 +120,7 @@
 	        &= (\prod_{u=0}^{v}p_{u}^{w_u})^2 \text{ where } & &u,v,w \in \mathbb{Z}^+ \\
 	        &                                                & &\text{and } p_i \text{ is a prime such that } p_{i-1} < p_i < p_{i+1} \\
 		& & &\text{using the Fundamental Theorem of Arithmetic} \\
-	      \sqrt{m} &= \prod_{u=0}^{v}p_{u}^{w_u} & \\
+	      \sqrt{n} &= \prod_{u=0}^{v}p_{u}^{w_u} & \\
       \end{align*}
       This means \(\sqrt{n}\) can be written as a product of primes which implies it is an integer, so \(\sqrt{n}\) is rational.
       This is a contradiction, hence \(\sqrt{n}\) is irrational if $n$ is not a perfect square.
