@@ -97,27 +97,33 @@ knapsackRP
     lea R5,1[R5]            ; increment i
     cmpgt R12,R6,R2
     jumpf R12,try[R0] 
+    store R14,9[R14]
+    lea R14,9[R14]
     jal R13,knapsackRP[R0]
     jump return[R0]
 
 try
     sub R2,R2,R6
-    store R1,6[R14]          ; store current N
-    store R14,7[R14]
-    lea R14,7[R14]           ; push stack frame
+    store R1,7[R14]          ; store current N
+    store R5,6[R14]          ; store current i
+    store R14,9[R14]
+    lea R14,9[R14]           ; push stack frame
     jal R13,knapsackRP[R0]
 
     add R7,R1,R0             ; move result
-    load R1,6[R14]           ; get current N
+    load R1,7[R14]           ; get current N
+    load R6,weights[R5]
     add R2,R2,R6             ; get W from W-weight[i]
-    lea R5,-1[R5]            ; decrement i
+    load R5,6[R14]
     load R8,values[R5]    
     add R7,R7,R8             ; solution if included
+    store R7,8[R14]
     lea R5,1[R5]             ; increment i
-    store R14,7[R14]
-    lea R14,7[R14]            ; push stack frame
+    store R14,9[R14]
+    lea R14,9[R14]            ; push stack frame
     jal R13,knapsackRP[R0]
 
+    load R7,8[R14]
     cmpgt R12,R7,R1
     jumpf R12,return[R0]
     add R1,R7,R0    
@@ -462,26 +468,26 @@ endFlip
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; <Copy-paste the provided inputs here; below input provided for testing purposes...> ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;N       data 3
-;W       data 5
-;weights data 1
-;        data 2
-;        data 3
-;values  data 4
-;        data 3
-;        data 5
-;stack   data 0
-
-N       data 5
-W       data 26
-weights data 12
-        data 7
-        data 11
-        data 8
-        data 9
-values  data 24
-        data 13
-        data 23
-        data 15
-        data 16
+N       data 3
+W       data 5
+weights data 1
+        data 2
+        data 3
+values  data 4
+        data 3
+        data 5
 stack   data 0
+
+;N       data 5
+;W       data 26
+;weights data 12
+;        data 7
+;       data 11
+;        data 8
+;        data 9
+;values  data 24
+;        data 13
+;        data 23
+;        data 15
+;        data 16
+;stack   data 0
