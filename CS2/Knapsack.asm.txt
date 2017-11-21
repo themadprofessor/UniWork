@@ -77,7 +77,29 @@ main ;Line 23
 ;    return max(takeit, leaveit);
 ; }
 ;
-
+; Stack frame stucture:
+;    9[R14]    origin of next stack frame
+;    8[R14]    solution if taken
+;    7[R14]    current N
+;    6[R14]    current i
+;    5[R14]    save R6
+;    4[R14]    save R7
+;    3[R14]    save R8
+;    2[R14]    save R12
+;    1[R14]    return address
+;    0[R14]    address to previous stack frame
+; Register usage:
+;    R1: N/result
+;    R2: W
+;    R3: pointer to weights
+;    R4: pointer to values
+;    R5: i
+;    R6: weights[i]'s value
+;    R7: solution if taken
+;    R8: values[i]'s value
+;    R12: comparison results
+;    R13: return address
+;    R14: stack pointer
 knapsackRP
     ; init stack frame
     store R13,1[R14]
@@ -140,95 +162,6 @@ return
 return0
     add R1,R0,R0
     jump return[R0]
-    
-; Stack frame structure:
-;    <fill in your stack frame's structure...>
-;    4[R14]   result if item taken
-;    3[R14]   current W
-;    2[R14]   current N
-;    1[R14]   return address (R13)
-;    0[R14]   pointer to previous stack frame
-;
-; Register usage:
-;    R1: N/result
-;    R2: W
-;    R3: pointer to weights
-;    R4: pointer to values
-;    R5: i
-;    R6: weights[i] pointer | values[i] pointer| result if taken 
-;    R7: weights[i] value
-;    R8: values[i] value
-;    <fill in your register usage...>
-;    R12: comparison results
-;    R13: return address
-;    R14: stack pointer
-knapsackRPold
-    store R14,0[R14]
-    store R13,1[R14]
-    store R5,2[R14]
-    store R6,3[R14]
-    store R7,4[R14]
-    store R8,5[R14]
-    store R12,6[R14]
-
-; if (W==0||i>=N) goto return0
-    cmpeq R12,R2,R0
-    jumpt R12,return0[R0]
-    cmplt R12,R5,R1
-    jumpf R12,return0[R0]
-
-; if (weights[i]>W) goto skip
-    add R6,R3,R5
-    load R7,0[R6]
-    cmpgt R12,R7,R2
-    jumpt R12,skip[R0]
-
-; else
-; take item
-    store R1,7[R14]; store current N
-    store R2,8[R14]; store current W
-    add R6,R0,R4   
-    add R6,R6,R5
-    load R8,0[R6]  ; values[i]
-    sub R2,R2,R7   ; W-weights[i]
-    lea R5,1[R5]   ; increment i
-    lea R14,10[R14] ; push stack
-    jal R13,knapsackRP[R0] ; call knapsackRP as if we take the item
-    add R1,R1,R8
-
-; leave item
-    load R2,7[R14] ; get current W
-    store R1,9[R14]; store result if taken
-    load R1,8[R14] ; get current N
-    lea R14,10[R14] ; push stack
-    jal R13,knapsackRP[R0]; call knapsackRP as if we don't take the item
-    load R6,9[R14] ; get result if taken
-
-    ;if (taken > left) set result to take, then goto return
-    cmplt R12,R1,R6
-    jumpf R12,return[R0]
-    add R1,R6,R0
-return
-    load R13,1[R14]
-    load R5,2[R14]
-    load R6,3[R14]
-    load R7,4[R14]
-    load R8,5[R14]
-    load R12,6[R14]
-    load R14,0[R14]
-
-    jump 0[R13]
-
-return0
-    add R1,R0,R0
-    jump return[R0]
-
-skip
-    lea R5,1[R5]
-    lea R14,10[R14]
-    jal R13,knapsackRP[R0]
-    jump return[R0]
-     
 
 ;
 ; function knapsackDP(N:R1, W:R2, weights:R3, values:R4) -> return value:R1
@@ -482,7 +415,7 @@ stack   data 0
 ;W       data 26
 ;weights data 12
 ;        data 7
-;       data 11
+;        data 11
 ;        data 8
 ;        data 9
 ;values  data 24
