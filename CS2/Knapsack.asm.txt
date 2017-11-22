@@ -44,10 +44,11 @@ main ;Line 23
     lea R4,values[R0]      ; R4 := values
     add R5,R0,R0           ; R5 := constant 0 (= i for knapsackRP)
 
-;    lea R14,1[R14]         ; Push stack pointer
-;    jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
-;    lea R14,1[R14]         ; Push stack pointer
-;    jal R13,println[R0]    ; Call the println() function; param in R1
+    lea R14,1[R14]         ; Push stack pointer
+    jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
+    lea R14,1[R14]         ; Push stack pointer
+    jal R13,println[R0]    ; Call the println() function; param in R1
+    ;trap R0,R0,R0
 
     load R1,N[R0]          ; Restore N into R1 after it was overwritten by knapsackRP
     lea R14,1[R14]         ; Push stack pointer
@@ -379,8 +380,9 @@ flip
 endFlip
 ; Append newline to string array, print string array and return
     add R4,R10,R3
-    sub R3,R3,R5
-    store R2,0[R4]
+;    sub R3,R3,R5
+    lea R6,-1[R4]
+    store R2,0[R6]
     lea R5,2[R0]
     trap R5,R10,R3
 
