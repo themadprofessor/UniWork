@@ -44,11 +44,10 @@ main ;Line 23
     lea R4,values[R0]      ; R4 := values
     add R5,R0,R0           ; R5 := constant 0 (= i for knapsackRP)
 
-    lea R14,1[R14]         ; Push stack pointer
-    jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
-    lea R14,1[R14]         ; Push stack pointer
-    jal R13,println[R0]    ; Call the println() function; param in R1
-    trap R0,R0,R0
+;    lea R14,1[R14]         ; Push stack pointer
+;    jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
+;    lea R14,1[R14]         ; Push stack pointer
+;    jal R13,println[R0]    ; Call the println() function; param in R1
 
     load R1,N[R0]          ; Restore N into R1 after it was overwritten by knapsackRP
     lea R14,1[R14]         ; Push stack pointer
@@ -118,13 +117,14 @@ knapsackRP
     load R6,weights[R5]
     lea R5,1[R5]            ; increment i
     cmpgt R12,R6,R2
-    jumpf R12,try[R0] 
-    store R14,9[R14]
+    jumpf R12,try[R0]       
+    store R14,9[R14]         ; skip current item by making a recursive call with i+1
     lea R14,9[R14]
     jal R13,knapsackRP[R0]
     jump return[R0]
 
 try
+    ; Compute solution if item is taken
     sub R2,R2,R6
     store R1,7[R14]          ; store current N
     store R5,6[R14]          ; store current i
@@ -132,25 +132,31 @@ try
     lea R14,9[R14]           ; push stack frame
     jal R13,knapsackRP[R0]
 
+    ; restore values for next recursive call and store solution if taken
     add R7,R1,R0             ; move result
     load R1,7[R14]           ; get current N
+    load R5,6[R14]           ; get current i
+    lea R5,-1[R5]
     load R6,weights[R5]
     add R2,R2,R6             ; get W from W-weight[i]
-    load R5,6[R14]
     load R8,values[R5]    
     add R7,R7,R8             ; solution if included
     store R7,8[R14]
+
+    ; compute solution if item is left
     lea R5,1[R5]             ; increment i
     store R14,9[R14]
     lea R14,9[R14]            ; push stack frame
     jal R13,knapsackRP[R0]
 
+    ; find the max between taken and left solutions, storing it in R1 to return
     load R7,8[R14]
     cmpgt R12,R7,R1
     jumpf R12,return[R0]
-    add R1,R7,R0    
+    add R1,R7,R0             ; move solution if taken into R1 as is larger then if left
 
 return
+    ; cleanup stack frame and return
     load R13,1[R14]
     load R12,2[R14]
     load R8,3[R14]
@@ -160,6 +166,7 @@ return
     jump 0[R13]
 
 return0
+    ; set the result to 0 and return, used when out of items/capacity or weight of item exceeds weight limit
     add R1,R0,R0
     jump return[R0]
 
@@ -183,6 +190,101 @@ return0
 ;    return S[N][W];
 ; }
 ;
+
+knapsackDP
+    ; init stack frame
+    store R11,1[R14]
+    store R8,2[R14]
+    store R7,3[R14]
+    store R6,4[R14]
+    store R5,5[R14]
+    lea R11,6[R14] ; init pointer to S as next memory after saved registers
+    add R5,R0,R0   ; set i = 0
+
+loopEmpty
+    cmpgt R12,R5,R2
+    jumpt R12,breakEmpty[R0]
+    add R6,R11,R5
+    store R0,0[R6]
+    lea R5,1[R5]
+    jump loopEmpty[R0]
+
+breakEmpty
+    add R5,R0,R0 ; set i=0
+
+loopn
+    lea R5,1[R5]   ; inc i
+    cmpgt R12,R5,R1
+    jumpt R12,breakn[R0]
+    
+    lea R6,-1[R0]   ; set w=-1
+loopw
+    lea R6,1[R6]    ; inc w
+    cmpgt R12,R6,R2
+    jumpt R12,loopn[R0]
+
+    lea R7,-1[R5] ; i-1
+    add R7,R7,R3  ; addr of weights[i-1]
+    load R7,0[R7] ; weights[i-1]
+    cmpgt R12,R7,R6
+    jumpf R12,noskip[R0]
+
+    lea R7,-1[R5] ; i-1
+    mul R7,R7,R2  ; W(i-1)
+    add R7,R7,R6  
+    add R7,R7,R11 ; addr of S[i-1][w]
+    load R8,0[R7] ; S[i-1][w]
+    lea R7,-1[R5] ; i-1
+    mul R7,R7,R2  ; W(i-1)
+    add R7,R7,R6  ; 
+    add R7,R7,R11 ; 
+    store R8,0[R7];
+    jump loopw[R0]    ; goto next iteration
+
+; item fits so test it
+noskip
+    lea R10,-1[R5] ; i-1
+    add R7,R10,R3  ; addr of weights[i-1]
+    load R7,0[R7] ; weights[i-1]
+    sub R7,R6,R7  ; w-weights[i-1]
+
+    mul R8,R10,R2  ; W(i-1)
+    add R8,R7,R8  
+    add R8,R8,R11 ; addr of S[i-1][w-weights[i-1]]
+    load R7,0[R8] ; S[i-1][w-weights[i-1]]
+    
+    add R8,R10,R4 ; addr of values[i-1]
+    load R8,0[R8] ; values[i-1]
+    add R7,R7,R8  ; S[i-1][w-weights[i-1]] + values[i-1]
+
+    mul R8,R10,R2 ; W(i-1)
+    add R8,R6,R8
+    add R8,R8,R11
+    load R8,0[R8] ; S[i-1][w]
+
+    cmpgt R12,R8,R7
+    jumpf R12,store[R0]
+    add R7,R8,R0
+
+store
+    mul R8,R5,R2
+    add R8,R6,R8
+    add R8,R8,R11
+    store R7,0[R8]
+    jump loopw[R0]
+
+breakn
+    mul R5,R1,R2
+    add R5,R2,R5
+    add R5,R5,R11
+    load R1,0[R5]
+    load R11,1[R14]
+    load R8,2[R14]
+    load R7,3[R14]
+    load R6,4[R14]
+    load R5,5[R14]
+    jump 0[R13]
+
 ; Stack frame structure:
 ;    <fill in your stack frame's structure...>
 ;    1[R14]   return address (R13)
@@ -203,109 +305,109 @@ return0
 ;    R12: comparison results
 ;    R13: return address
 ;    R14: stack pointer
-knapsackDP
+;knapsackDPold
 ; setup stack frame
-     store R5,1[R14]
-     store R6,2[R14]
-     store R7,3[R14]
-     store R8,4[R14]
-     store R9,5[R14]
-     store R10,6[R14]
-     store R11,7[R14]
-     store R12,8[R14]
-
-     lea R11,9[R14] ; init S
-     add R5,R0,R0   ; init i
-     lea R10,1[R0]
+;     store R5,1[R14]
+;     store R6,2[R14]
+;     store R7,3[R14]
+;     store R8,4[R14]
+;     store R9,5[R14]
+;     store R10,6[R14]
+;     store R11,7[R14]
+;     store R12,8[R14]
+;
+;     lea R11,9[R14] ; init S
+;     add R5,R0,R0   ; init i
+;     lea R10,1[R0]
 
 ; populate solutions of 0 items with 0
-loop0
-     cmplt R12,R5,R2
-     jumpf R12,break0[R0]
-     add R6,R11,R5
-     store R0,0[R6]
-     lea R5,1[R5]
-     jump loop0[R0]
+;loop0
+;     cmplt R12,R5,R2
+;     jumpf R12,break0[R0]
+;     add R6,R11,R5
+;     store R0,0[R6]
+;     lea R5,1[R5]
+;     jump loop0[R0]
 
-break0
-     add R5,R0,R0
+;break0
+;     add R5,R0,R0
 
 ; iterate of the number of items to consider
-loopN
-     lea R5,1[R5]
-     cmpgt R12,R5,R1
-     jumpt R12,breakN[R0]
-     add R6,R0,R0
+;loopN
+;     lea R5,1[R5]
+;     cmpgt R12,R5,R1
+;     jumpt R12,breakN[R0]
+;     add R6,R0,R0
 
 ; iterate of item weights
-loopW
-     cmpgt R12,R6,R2
-     jumpt R12,loopN[R0]
-     sub R7,R5,R10
-     add R8,R7,R3
-     load R8,0[R8]
-     cmpgt R12,R8,R6
-     jumpf R12,else[R0]
+;loopW
+;     cmpgt R12,R6,R2
+;     jumpt R12,loopN[R0]
+;     sub R7,R5,R10
+;     add R8,R7,R3
+;     load R8,0[R8]
+;     cmpgt R12,R8,R6
+;     jumpf R12,else[R0]
 
 ; if it doesn't fit, skip it
      ;mul R8,R7,R2
-     add R8,R8,R6
-     load R8,0[R8]
-     mul R7,R5,R2
-     add R7,R7,R6
-     store R8,0[R7]
-     lea R6,1[R6]
-     jump loopW[R0]
+;     add R8,R8,R6
+;     load R8,0[R8]
+;     mul R7,R5,R2
+;     add R7,R7,R6
+;     store R8,0[R7]
+;     lea R6,1[R6]
+;     jump loopW[R0]
 
 ; otherwise, compute if its better to take it or leave it
-else
+;else
 ; calc S[i-1][w-weights[i-1]] + values[i-1]
-     add R8,R3,R7
-     load R8,0[R8]
-     sub R8,R6,R8
-     mul R9,R7,R1
-     add R9,R9,R8
-     add R9,R9,R11
-     load R9,0[R9]
-     add R8,R4,R7
-     load R8,0[R8]
-     add R9,R9,R8
+;     add R8,R3,R7
+;     load R8,0[R8]
+;     sub R8,R6,R8
+;     mul R9,R7,R1
+;     add R9,R9,R8
+;     add R9,R9,R11
+;     load R9,0[R9]
+;     add R8,R4,R7
+;     load R8,0[R8]
+;     add R9,R9,R8
 
 ; get S[i-1][w]
-     mul R8,R7,R1
-     add R8,R8,R6
-     add R8,R8,R11
-     load R8,0[R8]
-    
-     cmpgt R12,R8,R9
-     jumpt R12,store[R0]
-     add R8,R9,R0
-store
-     mul R9,R5,R1
-     add R9,R9,R6
-     add R9,R9,R11
-     store R8,0[R9]
-     lea R6,1[R6]
-     jump loopW[R0]
-
-breakN
-     mul R6,R1,R1
-     add R6,R6,R2
-     add R6,R6,R11
-     load R1,0[R6]     
+;     mul R8,R7,R1
+;     add R8,R8,R6
+;     add R8,R8,R11
+;     load R8,0[R8]
+;    
+;     cmpgt R12,R8,R9
+;     jumpt R12,store[R0]
+;     add R8,R9,R0
+;storeold
+;     mul R9,R5,R1
+;     add R9,R9,R6
+;     add R9,R9,R11
+;     store R8,0[R9]
+;     lea R6,1[R6]
+;     jump loopW[R0]
+;
+;breakN
+;     mul R6,R1,R1
+;     add R6,R6,R2
+;     add R6,R6,R11
+;     load R1,0[R6]     
 
 ; cleanup stack
-     load R5,1[R14]
-     load R6,2[R14]
-     load R7,3[R14]
-     load R8,4[R14]
-     load R9,5[R14]
-     load R10,6[R14]
-     load R11,7[R14]
-     load R12,8[R14]
-
-     load R14,0[R14]
-     jump 0[R13]
+;     load R5,1[R14]
+;     load R6,2[R14]
+;     load R7,3[R14]
+;     load R8,4[R14]
+;     load R9,5[R14]
+;     load R10,6[R14]
+;     load R11,7[R14]
+;     load R12,8[R14]
+;
+;     load R14,0[R14]
+;     jump 0[R13]
 
 ; Function println(num:R1)
 ;    Converts the value in R1 to printable decimal digits and prints it on screen
@@ -401,6 +503,7 @@ endFlip
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; <Copy-paste the provided inputs here; below input provided for testing purposes...> ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; should produce 9
 N       data 3
 W       data 5
 weights data 1
@@ -411,6 +514,8 @@ values  data 4
         data 5
 stack   data 0
 
+
+; should produce 51
 ;N       data 5
 ;W       data 26
 ;weights data 12
