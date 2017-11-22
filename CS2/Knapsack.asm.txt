@@ -380,7 +380,6 @@ flip
 endFlip
 ; Append newline to string array, print string array and return
     add R4,R10,R3
-;    sub R3,R3,R5
     lea R6,-1[R4]
     store R2,0[R6]
     lea R5,2[R0]
