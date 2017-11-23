@@ -48,7 +48,6 @@ main ;Line 23
     jal R13,knapsackRP[R0] ; Call the recursive knapsack solution function
     lea R14,1[R14]         ; Push stack pointer
     jal R13,println[R0]    ; Call the println() function; param in R1
-    ;trap R0,R0,R0
 
     load R1,N[R0]          ; Restore N into R1 after it was overwritten by knapsackRP
     lea R14,1[R14]         ; Push stack pointer
@@ -191,26 +190,53 @@ return0
 ;    return S[N][W];
 ; }
 ;
-
+; Stack frame structure:
+;    <fill in your stack frame's structure...>
+;    0[R14]   pointer to previous stack frame
+;
+; Register usage:
+;    R1: N/result
+;    R2: W
+;    R3: pointer to weights
+;    R4: pointer to values
+;    R5: i | addr of S[N][W]
+;    R6: w
+;    R7: addr of S[i][w] | addr of S[i-1][w] | w-weights[i-1] | S[i-1][w-weights[i-1]] + values[i-1] | new S[i][w] value
+;    R8: value at S[i-1][w] | addr of S[i-1][w-weights[i-1]] i| S[i-1][w]
+;    R10: i-1
+;    R11: pointer to S
+;    R12: comparison results
+;    R13: return address
+;    R14: stack pointer
 knapsackDP
     ; init stack frame
     store R11,1[R14]
-    store R8,2[R14]
-    store R7,3[R14]
-    store R6,4[R14]
-    store R5,5[R14]
-    lea R11,6[R14] ; init pointer to S as next memory after saved registers
-    add R5,R0,R0   ; set i = 0
+    store R12,2[R14]
+    store R8,3[R14]
+    store R7,4[R14]
+    store R6,5[R14]
+    store R5,6[R14]
+    lea R11,7[R14] ; init pointer to S as next memory after saved registers
+    lea R5,-1[R0]   ; set i = -1
 
-loopEmpty
-    cmpgt R12,R5,R2
-    jumpt R12,breakEmpty[R0]
-    add R6,R11,R5
-    store R0,0[R6]
+; zero the array
+
+loopZero
     lea R5,1[R5]
-    jump loopEmpty[R0]
+    cmpgt R12,R5,R1
+    jumpt R12,breakZero[R0]
+    add R6,R0,R0
+loopZeroInner
+    cmpgt R12,R6,R2
+    jumpt R12,loopZero[R0]
+    mul R7,R5,R2
+    add R7,R7,R6
+    add R7,R7,R11
+    store R0,0[R7]
+    lea R6,1[R6]
+    jump loopZeroInner[R0]
 
-breakEmpty
+breakZero
     add R5,R0,R0 ; set i=0
 
 loopn
@@ -280,32 +306,15 @@ breakn
     add R5,R5,R11
     load R1,0[R5]
     load R11,1[R14]
-    load R8,2[R14]
-    load R7,3[R14]
-    load R6,4[R14]
-    load R5,5[R14]
+    load R12,2[R14]
+    load R8,3[R14]
+    load R7,4[R14]
+    load R6,5[R14]
+    load R5,6[R14]
+    load R14,0[R14]
     jump 0[R13]
 
-; Stack frame structure:
-;    <fill in your stack frame's structure...>
-;    1[R14]   return address (R13)
-;    0[R14]   pointer to previous stack frame
-;
-; Register usage:
-;    R1: N/result
-;    R2: W
-;    R3: pointer to weights
-;    R4: pointer to values
-;    R5: i
-;    R6: effective address of S[0][i] | w
-;    R7: i - 1 | effective address of S[i][w]
-;    R8: effective address of S[i-1][w] | w-weights[i-1]] | values[i-1] | S[i-1][w] | value to store at S[i][w]
-;    R9: effective address of S[i-1][w-weights[i-1]] | S[i-1][w-weights[i-1]] + values[i-1] | effective address of S[i][w]
-;    R10: constant 1
-;    R11: pointer to S
-;    R12: comparison results
-;    R13: return address
-;    R14: stack pointer
+
 
 
 ; Function println(num:R1)
@@ -399,19 +408,16 @@ endFlip
     
 
 ; Data segment
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; <Copy-paste the provided inputs here; below input provided for testing purposes...> ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; should produce 9
-N       data 3
-W       data 5
-weights data 1
-        data 2
-        data 3
-values  data 4
-        data 3
-        data 5
-stack   data 0
+;N       data 3
+;W       data 5
+;weights data 1
+;        data 2
+;        data 3
+;values  data 4
+;        data 3
+;        data 5
+;stack   data 0
 
 
 ; should produce 51
@@ -428,3 +434,39 @@ stack   data 0
 ;        data 15
 ;        data 16
 ;stack   data 0
+
+;N       data 7
+;W       data 170
+;weights data 41
+;        data 50
+;        data 49
+;        data 59
+;        data 55
+;        data 57
+;        data 60
+;values  data 442
+;        data 525
+;        data 511
+;        data 593
+;        data 546
+;        data 564
+;        data 617
+;stack   data 0
+
+N       data 7
+W       data 50
+weights data 31
+        data 10
+        data 20
+        data 19
+        data 4
+        data 3
+        data 6
+values  data 70
+        data 20
+        data 39
+        data 37
+        data 7
+        data 5
+        data 10
+stack   data 0
