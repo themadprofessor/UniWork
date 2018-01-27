@@ -1,58 +1,31 @@
 A cache consists of a collection of cache lines, which are copies of uniform size lines of memory, and method of storing the order of which the cache lines where added to the cache.
-The cache lines will be stored in an array, with their index's stored in a stack with the original memory address.
 
-When memory is requested, the cache will check for the address in the stack.
-If it is found, the data will be returned from the array at the index in the stack.
-If it is not found, a cache line will be requested from main memory starting at the required address.
-If the cache is full, the stack will be popped, removing the most recent cache line.
-Then the new cache line will be stored in the array at the old cache line's index, then the index and address will be pushed onto the stack.
-The old cache line is written back to main memory at its original location.
+When the CPU reads from memory, the cache will first check if the address is already in the cache, returning the data to CPU if it is.
+Otherwise, the cache will check for a free section of cache, storing the cache line from DRAM in the free section if any are available.
+If the cache is full, the cache will write a cache line back to DRAM, according to its eviction policy, marking its location in the cache as free.
+Then, the cache will request a cache line from DRAM at the required address and store it in the free section, returning the requested data to the CPU.
 
-When memory is required to written to, the cache will check for the address in the stack.
-If its found, the cache line will be written to.
-If it is not found, the cache will request the data from memory and cache it using the afore mentioned method.
-Once the data is stored in the cache, the cache line will be written to.
+When the CPU writes to memory, the cache must first request the memory from DRAM and store it in the cache.
+Then the write operation is executed on the cache, leaving the cache with two possible implementations to write the changes back to DRAM.
+Either, the cache can write the changes back to memory after the write operation has executed, or it can wait until the cache lines associated with the write operation are evicted.
+The first implementation would cause multiple writes to DRAM if the CPU wrote to data already in the cache if the cache line had already be written to.
+On the other hand, the second implementation would cause inconstancies between the cache and DRAM.
+Since the CPU will only access DRAM through the cache, the inconstancies would be handled by the cache's eviction policy.
+Also, the reduced writes to DRAM in the second implementation would cause writes to be dramatically faster.
 
-mdddddddddhhhyssooo++++++/+/////+ooyo+////+++++ooooosssyyhhdmmNMMMNMNNMNNNmmmmmmdhmNNNNNNNNNNNNNNNNmmmmmdddddddddmmdddddddddddddhdhhhhyssooooo++shyooo
-mdddddddddhhhyyssooooo++++++++///+ooss+////+++++ooooosssymNMMMNNNmmdyyhhddNNmmmmdhmNNNNNNNNNNNNNNNNmmmmmddddddddddddddddddddddddddddhhhhys+++++osysooo
-mmdddddddddhhhyysssoooo++++//+////+++os+///++++++oooooyNMNmmdddhhhhyyysssooshmNmdhmNNNNNNNNNNNNNNNNmmmmmmdddddddddddddddddddddddddddddhhhyo++osysyosss
-mddddddddddhhhhysssooooo++++++////+++/oo+/+++++++ooohNNmddddhhhhhhhhyyyssso++/ohNmNNNNNNNNNNNNNNNNNmmmmmmmddddddddddddddddddddddddddddddhhhysyyhhsosss
-mdddddddddddhhhhyssssooooo++++//////+++yo++++++++oymmddddddddhhhhhhhhyyyssoo+///+hNNNNNNNNNNNNNNNNNmmmmmmmmddddddddddddddddddddddddddddddhyysyhhhossss
-mmdddddddddddhhhyyssssooooooooo++++++oohso++++++ymNddddddddddhhhhhyyhhyysso++++///omNNNNNNNNNNNNNNNmmmmmmmmmdddddddddddddddddddddddddddddhyssyhhyoosss
-mmmdddddddddddhhhyyyssssssssssssssoooosdso+++++yMNmdddddddddhhhhhyhyyyyyyyssoo+//:+ddNNNNNNNNNNNNNNmmmmmmmmmmddddddddddddddddddddddddddddhyssyhhoossss
-mmmdddddddddddhhhhyyssssssssssssssssssydyo++++yMMNmmdddddddmmmmmddhhhhdmmNNNNmdyo:/yhmNNNNNNNNNNNNNmmmmmmmmmmmmdddddddddddddddddddddddddddhssyhsssssss
-mmmmdddddddddddhhhyyyssssoossssssssssyhdyso++sNMMNmmmddmNNMMMNNNNNdhhhhddmmmmmmddy+shhNNmNNNNNNNNNNmmmmmmmmmmmmmddddddddddddddddddddddddddhyshyossssss
-mmmmmddddddddddhhhyyyyssoooooossssosyyhhhso+sNMMMMNmmmNNNNNmmmmmmmmdyyyhdmmmmmmmhyy/sdmNNNNNNNNNNNNmmmmmmmmmmmmmmdddddddddddddddddddddddddhhhhyossyyys
-mmmmmmddddddddddhhhyyysssoooooooooossyhhhso+dMMMMMNmmNNmNNNmmmNNNmmdhsyhdmddNmhydhs+/smNmNNNNNNNNNNmmmmmmmmmmmmmmmddddddddddddddddddddddddddddyyyyyyys
-mmmmmmmddddddddddhhhyyysssoooooooosssshyysooNMMMMNNmNmmNNddNNmNNmmmdhy+hddmmmddyooo+:/dmmNNNNNNNNNNmmmmmmmmmmmmmmmmdddddhhhhhdddddddddddddddddyyyyyyyy
-mmmmmmmdddddddddddhhyysssssooooooossssyyyyooMMMMMNmmmmNNNmNNNNNmmmmddh++syhhhhyso+++/:oNNNNNNNNNNNNmmmmmmmmmmmmmmmmmddddhhhhdddddddddddddddddhyhyhyyyy
-mmdddddmddddddddddhhhyysssssoooooosssssyyysoNMMMMNmmmmmmdmmmmmdddmmddhs//+syyyysoo+/::/mmNNNNNNNNNNNmmmmmmmmmmmmmmmmmdddhyhhhdhhdddddddddddddhyyyyhhhy
-mmmmdddddddddddddddhhhysssooooooooossssssss+mMMMMmmdddddddddddddmmmddhyoosoosyyyso/:://dNNNNNNNNNNNmmmmmmmmmmmmmmmmmmmmddhhhhhhhhhhhdddddddddhhyyhyhhh
-mmmmmmmddddddddddddddhhyssooooooooooooossss+dMMMMmmddddddddddddmmmmNmdhhNNdyysyyso++++/dysdNNNNNNNNmmmmmmmmmmmmmmmmmmmmmddhhhhhhhhhhhhhdhdddhhhhhhhhhh
-mmmmmmmmmmddddddmdddddhhysooooooooooooooossoyMMMMmmmddddddddddmNmmNNNNmmmmdhdhyyyssoo/:shdsNNNNNNNNmmmmmmmmmmmmmmmmmmmmmmdddhhhhhhhhhhhhhdhdhhhhhhhhdd
-mmmmmmmmmmmmmmdmddmdddddhysooooooooossssyyyssNMMMNmmmmdddddddhmmmmmmmmmmdyoyhdhyyysso+:/sssmNNNNNNNmmmmmmmmmmmmmmmmmmmmmmmmdddhhhhhhhhhhhhdhhhhhhhhhdd
-mmmmmmmmmmmmmmmmmmmmmmddddyssooosssyyyyhhhyyymmmNNmmmmmmddddddmmmmmmddddhyo++hhhyyyssoo+ysssmNNNNNNmmmmmmmmmmmmmmmmmmmmmmmmmmddhhhhhhhhhhhhhhhhhhhhddd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmddddhhhhhhhhhhhhdNmmmmmmmdmmmmddddmmmmmmmmmmmmhs+ohhyyyyysooohhysNNNNNNNmmmmmmmmmmmmmmmmmmmmmmmmmmdddhhhhhhhhhhhhhhhhhdddd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmdddddddhhddhhhhdmmNmmmmmmmmmmmmdmmmmmmmmdhhydmmysyyyyyyyysos+osoNNNNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmddhhhhhhhhhhhhhhdddddd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmmddddddddddhhhhmmNNmmmmmmmmmmmmmmmmmmmmmmmmmNNNdysysyhhyysssoosNNNNNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmddhhhhhhhhhhhhhhddmdd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdddddhhhhmmmmmmmmmmmmmmmmmmmmmmMMMMMMMMMMmhyysyyyyyshddmNNNNNNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmddhhhhhhhhddddddmdd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmNNmmmmddddhhyyydmdmmmmmmmmmmmmmmmmmmmMMMMMMMMMMNhhyssyyyysNNNNNNNNNNNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdhhhhhddddddmmmmd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdddhhhhyhhdmmNNNNmmmmmmmmmmmmMMMMMMMMMMmyhhssyyyyhNNNNNNNMMMMMNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmddhddmmmmmmmmmmd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdddddhhhhyyhNNNNNmmmmmmmmmmdNMMMMMMMMNdsyhysyysyyNNMMMMMMMMMMNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdddddddddhhhhmmNNNNNNmmmmmmmmmmMMNNmmNmysyhysyyssoMMMMMMMMMMMMNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdmm
-NmmmmmmmmmmmmmmmmdmmmmmmmmmmmmmmmmmmmdddddhhhhhhhyhNmNNNNNNmNNNNmmmmdddddmdhysyhyyyssooMMMMMMMMMMMMNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmddddhhhhhhyyhmmmNNNNNNNNNmmmmmmmddddddyyhhyyyysooMMMMMMMMMMMMNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmd
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmddddhhhhhyyyymmmmNNNNNNNNNNNmNNNNmmmmdhddhysyyys+NMMMMMMMMMMMNNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmddddhhhhhhddNmmmNNNNNNNNNNNmmmmmmmmdddddhyyhhysoNmMMMMMMMMMMMMMMMNNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
-NmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmddddhdmNMmMMmmmNNNNNNNNNNNmmmmmmmmmddddhyhhyyysNmNMMMMMMMMMMMMMMMMMMMMNNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmdmNMMMMMNMMMNNNNNNNNNNNNNNmmmmmmmmmmmddhhhyyshNMhNMMMMMMMMMMMMMMMMMMMMMMMMMNNNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmNNMMMMMMMNmMMMMNNNNNNNNNNNNNNNNNNNNNNNmmhddhhy+dNMmNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNNmmmmmmmmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmNNMMMMMMMMMMMNNMMMMMmNNNNNNNNNNNNMNNNNNNNNmdhddhyosMMMNNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNmmmmmmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmmmmmmmmmmmmmmmmmmmmNNMMMMMMMMMMMMMMMMmMMMMMMmdNNNNNNNNNNNMMMMNNNNmdhddy+hMMNMNhMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMmmmmmmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmmmmmmmmmmmmmmmmNNMMMMMMMMMMMMMMMMMMMMmNMMMMMMNdhmNNNNNNNNNNNNNNmmdhdhssNMMMMMMdMMMMMMNNNNNNNNNNNMMMMMMMMMMMMMMMMMMMmmmmmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmmmmmmmmmmmmmNNMMMMMMMMMMMMMMMMMMMMMMMMNMMMMMMMMNdhddmNNNNNNNNNNmdhyydNMMMMMMMNyNNmmmNNNNNNNNNNmdhdNMMMMMMMMMMMMMMMMNmmmmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmmmmmmmmmmNNMMMMMMMMMMMMMMMMMMMMMMMMMMMNmMMMMMMMMMMNmdhhddddddhhhhdNMMMMMMMNNNNNNNNNNNNNNNNNNNNNmmdhhmMMMMMMMMMMMMMMMNmmmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmmmmmmmNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMmMMMMMMMMMMMMMMNNmdddhhdmNMMMMMMMNNNNNNNNNNMMMMMNMMNNNmNNNmmdyhmMMMMMMMMMMMMMMNmmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmmmmNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNMMMMMMMMMMMMMMMMMmdddmNNMMMMMNNNNNNNNMMMMMMMMMMMMNNNNNNNNmmhyhmNMMMMMMMMMMMMMNmmmmmmmmmmmmmmmmmmm
-NNmmmmmmmmmmNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMmmMMMMMMMMMMMMMMMMmmmNNNMMMMNNNNNNNNNMMMMMMMMMMMMMMNNNNNNNNmmdyddmMMMMMMMMMMMMMNmmmmmmmmmmmmmmmmmm
+The eviction policy for this cache will be LIFO, which means the most recently accessed cache line is to be removed when the cache if full.
+In order to store the order of the cache lines accesses, a stack will be maintained, where each element in the stack is the address of the cache line in the cache.
+When a cache line is accessed, its moved from its previous location in the stack to the top.
+This would be most efficiently defined as a linked list, as changing the location of an element in the stack is more efficient that an array based stack.
+In an array based stack, if the cache line accessed is not at the top of the stack, all elements prior have to be moved down the stack, causing the movement of the element to be O(2n).
+In a linked list based stack, if the cache line accessed is not at the top of the stack, only the pointer of the element previous, pointer in the element, and the head pointer have to be changed, which is O(n) as it is O(n) to find the element.
+In both cases, a cache line at the top of the stack causes the stack to not be adjusted.
 
+Since the cache is dramatically smaller than DRAM, there needs to be a method of keeping track of cache usage.
+Either, the cache stores a list of used or unused areas of the cache.
+The most efficient of the two options is to store a list of unused areas as storing a list of used areas still requires the cache to find a free area.
+In order to calculate the address of data in the cache and which cache line the data is used, the following formulae are used:
+	position_in_cache_line = address & 0xF
+	cache_line_address     = address >> 4
+By using these formulae, the cache doesn't need to store the address of the data in DRAM as it can be obtained by the following formula:
+	address = (cache_line_address) + position_in_cache_line
