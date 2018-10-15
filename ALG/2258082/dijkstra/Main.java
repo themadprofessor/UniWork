@@ -30,39 +30,51 @@ public class Main {
         }
 
         String[] split = in.nextLine().split(" ");
-        int start_vert = Integer.parseInt(split[0]);
-        int end_vert = Integer.parseInt(split[1]);
+        int start_index = Integer.parseInt(split[0]);
+        int end_index = Integer.parseInt(split[1]);
+        Vertex end_vert = graph.getVerts()[end_index];
 
 		reader.close();
 
 		// do the work here
-        LinkedHashSet<Integer> shortest_path = new LinkedHashSet<>();
-        int[] distances = IntStream.generate(() -> Integer.MAX_VALUE).limit(graph.size()).toArray();
-        distances[start_vert] = 0;
-        graph.getVerts()[start_vert].getAdjList().values().forEach(node -> distances[node.getIndex()] = node.getWeight());
 
-        while (shortest_path.size() != graph.size()) {
-            List<Vertex> not_in_path = Stream.of(graph.getVerts())
-                    .filter(vertex -> !shortest_path.contains(vertex.getIndex()))
-                    .sorted(Comparator.comparingInt(vertex -> distances[vertex.getIndex()]))
-                    .collect(Collectors.toList());
+        HashSet<Vertex> unvisited = new HashSet<>(Arrays.asList(graph.getVerts()));
+        HashMap<Vertex, Vertex> previous = new HashMap<>(graph.getVerts().length);
+        int[] distances = IntStream.generate(() -> Integer.MAX_VALUE).limit(graph.getVerts().length).toArray();
+        distances[start_index] = 0;
 
-            Vertex v = not_in_path.get(0);
+        while (unvisited.size() > 0) {
+            Vertex closest = unvisited.stream()
+                    .min(Comparator.comparingInt(vertex -> distances[vertex.getIndex()]))
+                    .get();
 
-            shortest_path.add(v.getIndex());
-            not_in_path.remove(0);
+            if (closest.equals(end_vert)) {
+                break;
+            }
 
-            not_in_path.stream()
-                    .filter(vertex -> v.getAdjList().containsKey(vertex.getIndex()))
-                    .forEach(vertex ->
-                            distances[vertex.getIndex()] = Math.min(distances[vertex.getIndex()], distances[vertex.getIndex()]+v.getAdjList().get(vertex.getIndex()).getWeight()));
+            closest.getAdjList()
+                    .forEach((index, node) -> {
+                        int new_len = distances[closest.getIndex()] + node.getWeight();
+                        if (new_len < distances[index]) {
+                            previous.put(graph.getVerts()[index], closest);
+                            distances[index] = new_len;
+                        }
+                    });
+            unvisited.remove(closest);
         }
 
+        ArrayDeque<Integer> stack = new ArrayDeque<>(previous.size());
+        Vertex curr = end_vert;
 
+        while (curr.getIndex() != start_index) {
+            stack.push(curr.getIndex());
+            curr = previous.get(curr);
+        }
 
-        System.out.println("Shortest distance from vertex " + start_vert + " to vertex " + end_vert + " is ");
-        System.out.println("Shortest path: " + shortest_path.stream().map(String::valueOf).collect(Collectors.joining(" ")));
-
+        System.out.println("Shortest path between vertex " + start_index + " and vertex " + end_index + " is " + distances[end_index]);
+        System.out.print("Shortest path: " + start_index);
+        stack.iterator().forEachRemaining(index -> System.out.print(" " + index));
+        System.out.print("\n");
 
 		// end timer and print total time
 		long end = System.currentTimeMillis();
