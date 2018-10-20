@@ -16,10 +16,25 @@ public class Main {
 		Scanner in = new Scanner(reader);
 		
 		// read in the data here and create graph here
-		
+
+		Graph graph = new Graph(Integer.parseInt(in.nextLine()));
+        for (int i = 0; i < graph.size(); i++) {
+            String[] split = in.nextLine().split(" ");
+            for (int j = 0; j < split.length; j++) {
+                if (!split[j].equals("0")) {
+                    graph.getVerts()[i].addToAdjList(j, Integer.parseInt(split[j]));
+                }
+            }
+        }
+
+        String[] split = in.nextLine().split(" ");
+        int start_index = Integer.parseInt(split[0]);
+        int end_index = Integer.parseInt(split[1]);
+
 		reader.close();
 
 		// do the work here
+        Path p = new Path(graph, start_index);
 
 		// end timer and print total time
 		long end = System.currentTimeMillis();
