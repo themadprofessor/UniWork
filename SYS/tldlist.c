@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <assert.h>
 
 struct tldlist {
 	TLDNode* root;
@@ -20,9 +21,34 @@ struct tldnode {
 	TLDNode* parent;
 };
 
+struct queuenode {
+	TLDNode* val;
+	struct queuenode* next;
+	struct queuenode* prev;
+}
+
+struct queue {
+	struct queuenode* head;
+	struct queuenode* tail;
+}
+
 struct tlditerator {
 	TLDNode* node;
 };
+
+static bool 
+
+static struct queue* build_queue(TLDList* tree) {
+	assert(tree != NULL);
+	struct queue* q;
+	if ((q = malloc(sizeof(struct queue))) == NULL) {
+		return NULL;
+	}
+	q->head = NULL;
+	q->tail = NULL;
+
+
+}
 
 static TLDNode* tldnode_create(char* tld) {
 	TLDNode* node;
@@ -117,7 +143,7 @@ void tldlist_destroy(TLDList* tld) {
 *  returns 1 if the entry was counted, 0 if not
 */
 int tldlist_add(TLDList* tld, char* hostname, Date* d) {
-	// TODO: get just the TLD after last .
+	// TODO: get just the TLD after last '.'
 	if (date_compare(d, tld->start) < 0 && date_compare(d, tld->end) > 0) {
 		return 0;
 	}
