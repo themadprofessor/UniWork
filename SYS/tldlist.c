@@ -24,19 +24,69 @@ struct tldnode {
 struct queuenode {
 	TLDNode* val;
 	struct queuenode* next;
-	struct queuenode* prev;
-}
+};
 
 struct queue {
 	struct queuenode* head;
 	struct queuenode* tail;
-}
-
-struct tlditerator {
-	TLDNode* node;
 };
 
-static bool 
+struct tlditerator {
+	struct queue* q;
+};
+
+static struct queuenode* queuenode_create(TLDNode* val) {
+	struct queuenode* node;
+	if ((node = (struct queuenode*)malloc(sizeof(struct queuenode))) == NULL) {
+		return NULL;
+	}
+	node->val = val;
+	node->next = NULL;
+	return node;
+}
+
+static void queuenode_destroy(struct queuenode* node) {
+	if (node->next != NULL) {
+		queuenode_destroy(node->next);
+	}
+	free(node);
+}
+
+static TLDNode* queue_pop(struct queue* q) {
+	if (q->head == NULL) {
+		return NULL;
+	}
+	struct queuenode* head = q->head;
+	q->head = head->next;
+	head->next = NULL;
+	TLDNode* val = head->val;
+	queuenode_destroy(head);
+	return val;
+}
+
+static bool add_to_queue(struct queue* q, TLDNode* node) {
+	if (node->left != NULL) {
+		if (add_to_queue(q, node->left) == false) {
+		       return false;
+		}	       
+	}
+
+	struct queuenode* q_node;
+	if ((q_node = queuenode_create(node)) == NULL) {
+		return false;
+	}
+
+	q->tail->next = q_node;
+	q->tail = q_node;
+
+	if (node->right != NULL) {
+		if (add_to_queue(q, node->right) == false) {
+		       return false;
+		}	       
+	}
+
+	return true;
+}
 
 static struct queue* build_queue(TLDList* tree) {
 	assert(tree != NULL);
@@ -44,10 +94,26 @@ static struct queue* build_queue(TLDList* tree) {
 	if ((q = malloc(sizeof(struct queue))) == NULL) {
 		return NULL;
 	}
-	q->head = NULL;
-	q->tail = NULL;
+	
+	struct queuenode* head;
+	if ((head = queuenode_create(tree->root)) == NULL) {
+		return NULL;
+	}
+	q->head = head;
+	q->tail = head;
 
+	if (add_to_queue(q, tree->root) == false) {
+		return NULL;
+	}
 
+	return q;
+}
+
+static void queue_destroy(struct queue* q) {
+	if (q->head != NULL) {
+		queuenode_destroy(q->head);
+	}
+	free(q);
 }
 
 static TLDNode* tldnode_create(char* tld) {
@@ -72,6 +138,7 @@ static void tldnode_destroy(TLDNode* node) {
 	if (node->right != NULL) {
 		tldnode_destroy(node->right);
 	}
+	free(node->val);
 	free(node);
 }
 
@@ -143,14 +210,22 @@ void tldlist_destroy(TLDList* tld) {
 *  returns 1 if the entry was counted, 0 if not
 */
 int tldlist_add(TLDList* tld, char* hostname, Date* d) {
-	// TODO: get just the TLD after last '.'
 	if (date_compare(d, tld->start) < 0 && date_compare(d, tld->end) > 0) {
 		return 0;
 	}
 
+	int hostname_len = strlen(hostname);
+	char* start_tld = strrchr(hostname, '.');
+	char* tld_str;
+	int tld_str_len = hostname_len - (labs(hostname - start_tld))+ 1;
+	if ((tld_str = malloc(tld_str_len * sizeof(char))) == NULL) {
+		return 0;
+	}
+	strncpy(tld_str, start_tld, tld_str_len);
+
 	if (tld->root == NULL) {
 		TLDNode* node;
-		if ((node = tldnode_create(hostname)) == NULL) {
+		if ((node = tldnode_create(tld_str)) == NULL) {
 			return 0;
 		}
 		tld->root = node;
@@ -158,7 +233,7 @@ int tldlist_add(TLDList* tld, char* hostname, Date* d) {
 		return 1;
 	}
 
-	if (tldnode_add(tld->root, hostname) == false) {
+	if (tldnode_add(tld->root, tld_str) == false) {
 		return 0;
 	}
 
@@ -183,17 +258,17 @@ TLDIterator* tldlist_iter_create(TLDList* tld) {
 		return NULL;
 	}
 
-	TLDNode* node = tld->root;
-
-	while (node->left != NULL) {
-		node = node->left;
+	struct queue* q;
+	if ((q = build_queue(tld)) == NULL) {
+		return NULL;
 	}
 
 	TLDIterator* iter;
 	if ((iter = malloc(sizeof(TLDIterator))) == NULL) {
 		return NULL;
 	}
-	iter->node=node;
+
+	iter->q = q;
 	return iter;
 }
 
@@ -202,28 +277,14 @@ TLDIterator* tldlist_iter_create(TLDList* tld) {
 *  to the TLDNode if successful, NULL if no more elements to return
 */
 TLDNode* tldlist_iter_next(TLDIterator* iter) {
-	TLDNode* ret = iter->node;
-	TLDNode* node;
-	if (ret->right != NULL) {
-		node = ret->right;
-	} else if (ret->parent != NULL) {
-		node = ret->parent;
-	} else {
-		return ret;
-	}
-	while (node->left != NULL) {
-		node = node->left;
-	}
-	iter->node = node;
-
-	iter->node = node;
-	return ret;
+	return queue_pop(iter->q);
 }
 
 /*
 *  tldlist_iter_destroy destroys the iterator specified by `iter'
 */
 void tldlist_iter_destroy(TLDIterator* iter) {
+	queue_destroy(iter->q);
 	free(iter);
 }
 
