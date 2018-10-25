@@ -1,0 +1,3 @@
+[submodule "IS/shitty-is-project"]
+	path = IS/shitty-is-project
+	url = git@github.com:themadprofessor/shitty-is-project.git
