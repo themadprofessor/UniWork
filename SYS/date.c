@@ -1,3 +1,8 @@
+/*
+ * Stuart Reilly 2258082 SP Exercise 1
+ * This is my own work as defined in the Academic Ethics agreement.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include "date.h"

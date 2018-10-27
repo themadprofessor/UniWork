@@ -1,3 +1,8 @@
+/*
+ * Stuart Reily 2258082 SP Exercise 1
+ * This is my own work as defined by the Academic Ethics agreement
+ */
+
 #include "tldlist.h"
 #include "date.h"
 #include <string.h>
@@ -15,6 +20,7 @@ struct tldlist {
 
 struct tldnode {
 	char* name;
+	int balance;
 	long count;
 	TLDNode* left;
 	TLDNode* right;
@@ -56,6 +62,7 @@ static TLDNode* queue_pop(struct queue* q) {
 	if (q->head == NULL) {
 		return NULL;
 	}
+
 	struct queuenode* head = q->head;
 	q->head = head->next;
 	head->next = NULL;
@@ -76,8 +83,13 @@ static bool add_to_queue(struct queue* q, TLDNode* node) {
 		return false;
 	}
 
-	q->tail->next = q_node;
-	q->tail = q_node;
+	if (q->head == NULL) {
+		q->head = q_node;
+		q->tail = q_node;
+	} else {
+		q->tail->next = q_node;
+		q->tail = q_node;
+	}
 
 	if (node->right != NULL) {
 		if (add_to_queue(q, node->right) == false) {
@@ -94,15 +106,11 @@ static struct queue* build_queue(TLDList* tree) {
 	if ((q = malloc(sizeof(struct queue))) == NULL) {
 		return NULL;
 	}
+	q->head = NULL;
+	q->tail = NULL;
 	
-	struct queuenode* head;
-	if ((head = queuenode_create(tree->root)) == NULL) {
-		return NULL;
-	}
-	q->head = head;
-	q->tail = head;
-
 	if (add_to_queue(q, tree->root) == false) {
+		free(q);
 		return NULL;
 	}
 
@@ -116,13 +124,122 @@ static void queue_destroy(struct queue* q) {
 	free(q);
 }
 
-static TLDNode* tldnode_create(char* tld) {
+static int height(TLDNode* node) {
+	if (node == NULL) {
+		return 0;
+	}
+	int left = 0;
+	int right = 0;
+	if (node->left != NULL) {
+		left = height(node->left) + 1;
+	}
+	if (node->right != NULL) {
+		right = height(node->right) + 1;
+	}
+
+	if (left > right) {
+		return left;
+	} else {
+		return right;
+	}
+}
+
+static void set_balance(TLDNode* node) {
+	node->balance = height(node->right) - height(node->left);
+}
+
+static TLDNode* rotate_right(TLDNode* node) {
+	TLDNode* z = node->left;
+	z->parent = node->parent;
+
+	node->left = z->right;
+
+	if (node->left != NULL) {
+		node->left->parent = node;
+	}
+
+	z->right = node;
+	node->parent = z;
+
+	if (z->parent != NULL) {
+		if (z->parent->left == node) {
+			z->parent->left = z;
+		} else {
+			z->parent->right = z;
+		}
+	}
+
+	set_balance(node);
+	set_balance(z);
+
+	return z;
+}
+
+static TLDNode* rotate_left(TLDNode* node) {
+	TLDNode* z = node->right;
+	z->parent = node->parent;
+
+	node->right = z->left;
+
+	if (node->right != NULL) {
+		node->right->parent = node;
+	}
+
+	z->left = node;
+	node->parent = z;
+
+	if (z->parent != NULL) {
+		if (z->parent->right == node) {
+			z->parent->right = z;
+		} else {
+			z->parent->left = z;
+		}
+	}
+
+	set_balance(node);
+	set_balance(z);
+
+	return z;
+}
+
+static void rebalance(TLDNode* node, TLDList* list) {
+	TLDNode* n;
+	set_balance(node);
+	printf("%p", (void *)node);
+
+	if (node->balance == -2) {
+		if (height(node->left->left) >= height(node->left->right)) {
+			n = rotate_right(node);
+		} else {
+			node->left = rotate_left(node);
+			n = rotate_right(node);
+		}
+	} else if (node->balance == 2) {
+		if (height(node->right->right) >= height(node->right->left)) {
+			n = rotate_left(node);
+		} else {
+			node->right = rotate_right(node);
+			n = rotate_left(node);
+		}
+	} else {
+		n = node;
+	}
+	
+	printf(" %p\n", (void *)n);
+	if (node->parent != NULL) {
+		rebalance(node->parent, list);
+	} else {
+		list->root = node;
+	}
+}
+
+static TLDNode* tldnode_create() {
 	TLDNode* node;
 	if ((node = malloc(sizeof(TLDNode))) == NULL) {
 		return NULL;
 	}
 
-	node->name = tld;
+	node->name = NULL;
 	node->count = 0;
 	node->left = NULL;
 	node->right = NULL;
@@ -138,40 +255,48 @@ static void tldnode_destroy(TLDNode* node) {
 	if (node->right != NULL) {
 		tldnode_destroy(node->right);
 	}
-	free(node->val);
+	free(node->name);
 	free(node);
 }
 
-static bool tldnode_add(TLDNode* node, char* hostname) {
+static bool tldnode_add(TLDNode* node, char* hostname, TLDList* list) {
 	int cmp = strcmp(node->name, hostname);
 
 	if (cmp < 0) {
 		if (node->right == NULL) {
-			TLDNode* new = tldnode_create(hostname);
+			TLDNode* new = tldnode_create();
 			if (new == NULL) {
 				return false;
 			}
 			node->right = new;
+			new->name = hostname;
+			new->count++;
+			rebalance(node, list);
 			return true;
 		} else {
-			return tldnode_add(node->right, hostname);
+			return tldnode_add(node->right, hostname, list);
 		}
 	} else if (cmp > 0) {
 		if (node->left == NULL) {
-			TLDNode* new = tldnode_create(hostname);
+			TLDNode* new = tldnode_create();
 			if (new == NULL) {
 				return false;
 			}
 			node->left = new;
+			new->name = hostname;
+			new->count++;
+			rebalance(node, list);
 			return true;
 		} else {
-			return tldnode_add(node->left, hostname);
+			return tldnode_add(node->left, hostname, list);
 		}
 	} else {
 		node->count++;
+		free(hostname);
 		return true;
 	}
 }
+
 
 /*
 *  tldlist_create generates a list structure for storing counts against
@@ -201,6 +326,8 @@ TLDList* tldlist_create(Date* begin, Date* end) {
 */
 void tldlist_destroy(TLDList* tld) {
 	tldnode_destroy(tld->root);
+	date_destroy(tld->start);
+	date_destroy(tld->end);
 	free(tld);
 }
 
@@ -215,7 +342,7 @@ int tldlist_add(TLDList* tld, char* hostname, Date* d) {
 	}
 
 	int hostname_len = strlen(hostname);
-	char* start_tld = strrchr(hostname, '.');
+	char* start_tld = strrchr(hostname, '.') + 1;
 	char* tld_str;
 	int tld_str_len = hostname_len - (labs(hostname - start_tld))+ 1;
 	if ((tld_str = malloc(tld_str_len * sizeof(char))) == NULL) {
@@ -225,15 +352,19 @@ int tldlist_add(TLDList* tld, char* hostname, Date* d) {
 
 	if (tld->root == NULL) {
 		TLDNode* node;
-		if ((node = tldnode_create(tld_str)) == NULL) {
+		if ((node = tldnode_create()) == NULL) {
+			free(tld_str);
 			return 0;
 		}
 		tld->root = node;
 		node->count++;
+		node->name = tld_str;
+		tld->count++;
 		return 1;
 	}
 
-	if (tldnode_add(tld->root, tld_str) == false) {
+	if (tldnode_add(tld->root, tld_str, tld) == false) {
+		free(tld_str);
 		return 0;
 	}
 
@@ -265,6 +396,7 @@ TLDIterator* tldlist_iter_create(TLDList* tld) {
 
 	TLDIterator* iter;
 	if ((iter = malloc(sizeof(TLDIterator))) == NULL) {
+		queue_destroy(q);
 		return NULL;
 	}
 
