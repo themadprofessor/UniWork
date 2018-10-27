@@ -1,12 +1,13 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
 public class Vertex {
     private int index;
-    private HashMap<Integer, Node> adjList;
+    private ArrayList<Node> adjList;
 
     public Vertex(int index) {
-        adjList = new HashMap<>();
+        adjList = new ArrayList<>();
         this.index = index;
     }
 
@@ -18,12 +19,12 @@ public class Vertex {
         this.index = index;
     }
 
-    public HashMap<Integer, Node> getAdjList() {
+    public ArrayList<Node> getAdjList() {
         return adjList;
     }
 
     public void addToAdjList(int index, int weight) {
-        adjList.put(index, new Node(index, weight));
+        adjList.add(new Node(index, weight));
     }
 
     public int degree() {
@@ -41,7 +42,8 @@ public class Vertex {
 
     @Override
     public int hashCode() {
-        return Objects.hash(index, adjList);
+        // It can be assumed that a Vertex at a given index will be the only instance of this class with the given index.
+        return index;
     }
 
     @Override

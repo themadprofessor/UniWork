@@ -4,7 +4,7 @@
 \title{Algorithmics I - Assessed Exercise\\ \vspace{4mm} 
 Status and Implementation Reports}
 
-\author{\bf Insert your name\\ \bf and matriculation number here}
+\author{\bf Stuart Reilly\\ \bf 2258082}
 
 \date{\today}
 
@@ -20,6 +20,20 @@ Otherwise, this section should state whether you believe that your programs are 
 \section*{Implementation report}
 
 \subsection*{Dijkstra's Algorithm}
+
+Initially, the adjacency list of a Vertex was a HashMap<Integer, Node> as one assumed the algorithm would require frequent get and contains calls.
+Being a HashMap, these calls would be O(1) based on the hash function used for an Integer (in the case of Integer, it is just the int value of the Integer).
+However, after completing the algorithm's implementation, it was shown the adjacency list was used exclusively for iteration, which is more efficently handled by an ArrayList.
+
+In order to keep track of the current path, a HashMap<Vertex, Vertex> is used to store which vertex is before a given vertex in the path.
+The use of a HashMap over a list allows for O(1) insertion and access, which are the only uses of this object.
+
+The Graph object contains an array of all the vertices in the graph as this allows for O(1) access (each Vertex keeps track of its index in this array).
+
+Once the Graph object is populated by parsing the input file, the starting vertex would be removed from the collection of unvisited vertices and marked as the current vertex.
+Then, the closest vertex to the current vertex would be then found.
+The distance from the starting vertex to the vertex closest to current would then be stored if it is shorter than the previous path to this vertex.
+
 
 Here, explain how you implemented the Dijkstra's algorithm to compute and return the required information. Include a discussion of any steps that you took to improve efficiency including the reasoning behind your choice of data structures.
 

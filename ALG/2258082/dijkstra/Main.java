@@ -38,7 +38,7 @@ public class Main {
 
 		// do the work here
 
-        HashSet<Vertex> unvisited = new HashSet<>(Arrays.asList(graph.getVerts()));
+        /*HashSet<Vertex> unvisited = new HashSet<>(Arrays.asList(graph.getVerts()));
         HashMap<Vertex, Vertex> previous = new HashMap<>(graph.getVerts().length);
         int[] distances = IntStream.generate(() -> Integer.MAX_VALUE).limit(graph.getVerts().length).toArray();
         distances[start_index] = 0;
@@ -69,16 +69,69 @@ public class Main {
         while (curr.getIndex() != start_index) {
             stack.push(curr.getIndex());
             curr = previous.get(curr);
-        }
+        }*/
 
-        System.out.println("Shortest path between vertex " + start_index + " and vertex " + end_index + " is " + distances[end_index]);
+        for (int i = 0; i < 10000; i++) {
+            bench(graph, start_index, end_vert);
+        }
+        System.out.println("Warmed up");
+
+        long sum = 0;
+        int runs = 100000;
+        for (int i = 0; i < runs; i++) {
+            long s = System.nanoTime();
+            bench(graph, start_index, end_vert);
+            long e = System.nanoTime();
+            sum += (e - s);
+        }
+        System.out.println("Average Time [" + sum / runs + "ns] over " + runs + " runs");
+
+        //System.out.println("Shortest path between vertex " + start_index + " and vertex " + end_index + " is " + distances[end_index]);
         System.out.print("Shortest path: " + start_index);
-        stack.iterator().forEachRemaining(index -> System.out.print(" " + index));
+        //stack.iterator().forEachRemaining(index -> System.out.print(" " + index));
         System.out.print("\n");
 
 		// end timer and print total time
 		long end = System.currentTimeMillis();
 		System.out.println("\nElapsed time: " + (end - start) + " milliseconds");
 	}
+
+	private static void bench(Graph graph, int start_index, Vertex end_vert) {
+        HashSet<Vertex> unvisited = new HashSet<>(Arrays.asList(graph.getVerts()));
+        HashMap<Vertex, Vertex> previous = new HashMap<>(graph.size());
+        int[] distances = new int[graph.size()];
+        for (int i = 0; i < distances.length; i++) {
+            distances[i] = Integer.MAX_VALUE;
+        }
+        distances[start_index] = 0;
+
+        Vertex closest = graph.getVerts()[start_index];
+
+        while (unvisited.size() > 0) {
+            if (closest.equals(end_vert)) {
+                break;
+            }
+
+            for (Node node : closest.getAdjList()) {
+                int new_len = distances[closest.getIndex()] + node.getWeight();
+                if (new_len < distances[node.getIndex()]) {
+                    previous.put(graph.getVerts()[node.getIndex()], closest);
+                    distances[node.getIndex()] = new_len;
+                }
+            }
+            unvisited.remove(closest);
+            closest = unvisited.stream()
+                    .min(Comparator.comparingInt(vertex -> distances[vertex.getIndex()]))
+                    .get();
+        }
+
+        ArrayDeque<Integer> stack = new ArrayDeque<>(previous.size());
+        Vertex curr = end_vert;
+
+        while (curr.getIndex() != start_index) {
+            stack.push(curr.getIndex());
+            curr = previous.get(curr);
+        }
+    }
 
 }
