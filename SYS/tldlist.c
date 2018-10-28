@@ -1,6 +1,6 @@
 /*
  * Stuart Reily 2258082 SP Exercise 1
- * This is my own work as defined by the Academic Ethics agreement
+ * This is my own work as defined by the Academic Ethics agreement.
  */
 
 #include "tldlist.h"
@@ -149,83 +149,76 @@ static void set_balance(TLDNode* node) {
 }
 
 static TLDNode* rotate_right(TLDNode* node) {
-	TLDNode* z = node->left;
-	z->parent = node->parent;
+	TLDNode* rot = node->left;
+	rot->parent = node->parent;
 
-	node->left = z->right;
-
+	node->left = rot->right;
 	if (node->left != NULL) {
 		node->left->parent = node;
 	}
 
-	z->right = node;
-	node->parent = z;
+	rot->right = node;
+	node->parent = rot;
 
-	if (z->parent != NULL) {
-		if (z->parent->left == node) {
-			z->parent->left = z;
+	if (rot->parent != NULL) {
+		if (rot->parent->left == node) {
+			rot->parent->left = rot;
 		} else {
-			z->parent->right = z;
+			rot->parent->right = rot;
 		}
 	}
 
 	set_balance(node);
-	set_balance(z);
+	set_balance(rot);
 
-	return z;
+	return rot;
 }
 
 static TLDNode* rotate_left(TLDNode* node) {
-	TLDNode* z = node->right;
-	z->parent = node->parent;
+	TLDNode* rot = node->right;
+	rot->parent = node->parent;
 
-	node->right = z->left;
-
+	node->right = rot->left;
 	if (node->right != NULL) {
 		node->right->parent = node;
 	}
 
-	z->left = node;
-	node->parent = z;
+	rot->left = node;
+	node->parent = rot;
 
-	if (z->parent != NULL) {
-		if (z->parent->right == node) {
-			z->parent->right = z;
+	if (rot->parent != NULL) {
+		if (rot->parent->left == node) {
+			rot->parent->left = rot;
 		} else {
-			z->parent->left = z;
+			rot->parent->right = rot;
 		}
 	}
 
 	set_balance(node);
-	set_balance(z);
+	set_balance(rot);
 
-	return z;
+	return rot;
 }
 
 static void rebalance(TLDNode* node, TLDList* list) {
-	TLDNode* n;
 	set_balance(node);
-	printf("%p", (void *)node);
 
 	if (node->balance == -2) {
 		if (height(node->left->left) >= height(node->left->right)) {
-			n = rotate_right(node);
+			node = rotate_right(node);
 		} else {
-			node->left = rotate_left(node);
-			n = rotate_right(node);
+			node->left = rotate_left(node->left);
+			node = rotate_right(node);
 		}
 	} else if (node->balance == 2) {
 		if (height(node->right->right) >= height(node->right->left)) {
-			n = rotate_left(node);
+			node = rotate_left(node);
 		} else {
-			node->right = rotate_right(node);
-			n = rotate_left(node);
+			node->right = rotate_right(node->right);
+			node = rotate_left(node);
 		}
-	} else {
-		n = node;
 	}
 	
-	printf(" %p\n", (void *)n);
 	if (node->parent != NULL) {
 		rebalance(node->parent, list);
 	} else {
@@ -271,6 +264,7 @@ static bool tldnode_add(TLDNode* node, char* hostname, TLDList* list) {
 			node->right = new;
 			new->name = hostname;
 			new->count++;
+			new->parent = node;
 			rebalance(node, list);
 			return true;
 		} else {
@@ -285,6 +279,7 @@ static bool tldnode_add(TLDNode* node, char* hostname, TLDList* list) {
 			node->left = new;
 			new->name = hostname;
 			new->count++;
+			new->parent = node;
 			rebalance(node, list);
 			return true;
 		} else {
