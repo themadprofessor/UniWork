@@ -1,0 +1,5 @@
+My solution successed with small.txt and large.txt.
+It implements an AVL tree.
+
+
+Stuart Reilly 2258082
