@@ -65,18 +65,21 @@ public class Main {
                     .get();
         }
 
-        ArrayDeque<Integer> stack = new ArrayDeque<>(previous.size());
-        Vertex curr = end_vert;
+        if (previous.containsKey(end_vert)) {
+            ArrayDeque<Integer> stack = new ArrayDeque<>(previous.size());
+            Vertex curr = end_vert;
+            while (curr.getIndex() != start_index) {
+                stack.push(curr.getIndex());
+                curr = previous.get(curr);
+            }
 
-        while (curr.getIndex() != start_index) {
-            stack.push(curr.getIndex());
-            curr = previous.get(curr);
+            System.out.println("Shortest path between vertex " + start_index + " and vertex " + end_index + " is " + distances[end_index]);
+            System.out.print("Shortest path: " + start_index);
+            stack.iterator().forEachRemaining(index -> System.out.print(" " + index));
+            System.out.print("\n");
+        } else {
+            System.out.println("No path found");
         }
-
-        System.out.println("Shortest path between vertex " + start_index + " and vertex " + end_index + " is " + distances[end_index]);
-        System.out.print("Shortest path: " + start_index);
-        stack.iterator().forEachRemaining(index -> System.out.print(" " + index));
-        System.out.print("\n");
 
 		// end timer and print total time
 		long end = System.currentTimeMillis();

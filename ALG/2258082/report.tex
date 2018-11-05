@@ -1,58 +1,177 @@
 \documentclass{article}
 \usepackage{a4wide,amsmath,amssymb,graphicx}
 
-\title{Algorithmics I - Assessed Exercise\\ \vspace{4mm} 
+\title{Algorithmics I - Assessed Exercise\\ \vspace{4mm}
 Status and Implementation Reports}
 
-\author{\bf Stuart Reilly\\ \bf 2258082}
+\author{\textbf{Stuart Reilly} \\ \textbf{2258082} }
 
 \date{\today}
 
 \begin{document}
-\maketitle
+    \maketitle
 
-\section*{Status report}
+    \section*{Status report}
 
-In the event of a non-working program, this section should state clearly what happens when the program is compiled (in the case of compile-time errors) or run (in the case of run-time errors).  
+    In the event of a non-working program, this section should state clearly what happens when the program is compiled (in the case of compile-time errors) or run (in the case of run-time errors).
 
-Otherwise, this section should state whether you believe that your programs are working correctly. If so, indicate the basis for your belief, if not comment on what you think might be the problem.
+    Otherwise, this section should state whether you believe that your programs are working correctly. If so, indicate the basis for your belief, if not comment on what you think might be the problem.
 
-\section*{Implementation report}
+    \section*{Implementation report}
 
-\subsection*{Dijkstra's Algorithm}
+    \subsection*{Dijkstra's Algorithm}
 
-Initially, the adjacency list of a Vertex was a HashMap<Integer, Node> as one assumed the algorithm would require
-frequent get and contains calls.
-Being a HashMap, these calls would be O(1) based on the hash function used for an Integer (in the case of Integer, it is
-just the int value of the Integer).
-However, after completing the algorithm's implementation, it was shown the adjacency list was used exclusively for
-iteration, which is more efficiently handled by an ArrayList.
+    Initially, the adjacency list of a Vertex was a HashMap<Integer, Node> as one assumed the algorithm would require
+    frequent get and contains calls.
+    Being a HashMap, these calls would be O(1) based on the hash function used for an Integer (in the case of Integer, it is
+    just the int value of the Integer).
+    However, after completing the algorithm's implementation, it was shown the adjacency list was used exclusively for
+    iteration, which is more efficiently handled by an ArrayList.
 
-In order to keep track of the current path, a HashMap<Vertex, Vertex> is used to store which vertex is before a given
-vertex in the path.
-The use of a HashMap over a list allows for O(1) insertion and access, which are the only uses of this object.
+    In order to keep track of the current path, a HashMap<Vertex, Vertex> is used to store which vertex is before a given
+    vertex in the path.
+    The use of a HashMap over a list allows for O(1) insertion and access, which are the only uses of this object.
 
-The Graph object contains an array of all the vertices in the graph as this allows for O(1) access (each Vertex keeps
-track of its index in this array).
+    The Graph object contains an array of all the vertices in the graph as this allows for O(1) access (each Vertex keeps
+    track of its index in this array).
 
-Once the Graph object is populated by parsing the input file, the starting vertex would be removed from the collection
-of unvisited vertices and marked as the current vertex.
-Then, the closest vertex to the current vertex would be then found.
-The distance to each of the nodes adjacent to the closest vertex from the starting node is then calculated.
-If the new distance is shorter than the previously known distance to the node, its distance is updated.
-The closest vertex is then removed from the collection of unvisited vertices.
-This is then repeated for the vertex with the shortest known distance which is yet to be visited, until the vertex to be
-operated on is the final vertex.
+    Once the Graph object is populated by parsing the input file, the starting vertex would be removed from the collection
+    of unvisited vertices and marked as the current vertex.
+    Then, the closest vertex to the current vertex would be then found.
+    The distance to each of the nodes adjacent to the closest vertex from the starting node is then calculated.
+    If the new distance is shorter than the previously known distance to the node, its distance is updated.
+    The closest vertex is then removed from the collection of unvisited vertices.
+    This is then repeated for the vertex with the shortest known distance which is yet to be visited, until the vertex to be
+    operated on is the final vertex.
 
 
-\subsection*{Backtrack Search}
+    \subsection*{Backtrack Search}
 
-Here, explain how you implemented the Backtrack search to compute and return the required information. Include a discussion of any steps that you took to improve efficiency including the reasoning behind your choice of data structures.
+    Initially, the iteration with each recursion was implemented using the Stream API, in an attempt to provide more
+    readable code for initial implementation.
+    An alternative implementation using a foeach loop executed in a third of the time was then used.
 
-\section*{Empirical results}
+    The set of unvisited vertices is implemented as a HashSet<Integer> since this would allow for O(1) insertion, removal
+    and contains operations, which are called each iteration of the loop within each recursion.
 
-This section is part of the marking scheme "Outputs from test data: 2 marks".
+    Once the Graph object is populated by parsing the input file, the starting vertex would be removed from the collection
+    of unvisited vertices and marked as the current vertex.
+    Then for each adjacent unvisited vertex to the current node where its addition to the current path produces a path of
+    length shorter than the best known path, if the vertex is the end node, the best path is updated to be the current path
+    including the vertex, otherwise recurse with the current path appended with the current vertex.
 
-Give the running times of your two programs on the data sets provided. If the program fails to terminate in, say, two minutes, then simply report non-termination. 
+    \section*{Empirical results}
 
+    \subsection*{Dijkstra}
+    \subsubsection*{data1000.txt}
+    \begin{verbatim}
+        Shortest path between vertex 24 and vertex 152 is 17
+        Shortest path: 24 922 810 957 963 371 837 152
+
+        Elapsed time: 353 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data20.txt}
+    \begin{verbatim}
+        Shortest path between vertex 3 and vertex 4 is 1199
+        Shortest path: 3 0 4
+
+        Elapsed time: 70 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data40.txt}
+    \begin{verbatim}
+        Shortest path between vertex 3 and vertex 4 is 1157
+        Shortest path: 3 36 4
+
+        Elapsed time: 76 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data60.txt}
+    \begin{verbatim}
+        Shortest path between vertex 3 and vertex 4 is 1152
+        Shortest path: 3 49 4
+
+        Elapsed time: 78 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data6_1.txt}
+    \begin{verbatim}
+        Shortest path between vertex 2 and vertex 5 is 11
+        Shortest path: 2 1 0 5
+
+        Elapsed time: 69 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data6_2.txt}
+    \begin{verbatim}
+        No path found
+
+        Elapsed time: 63 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data80.txt}
+    \begin{verbatim}
+        Shortest path between vertex 4 and vertex 3 is 1152
+        Shortest path: 4 49 3
+
+        Elapsed time: 84 milliseconds
+    \end{verbatim}
+
+    \subsubsection{Backtrack}
+    \subsubsection*{data1000.txt}
+    \begin{verbatim}
+        Shortest path between vertex 24 and vertex 152 is 17
+        Shortest path: 24 582 964 837 152
+
+        Elapsed time: 284196 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data20.txt}
+    \begin{verbatim}
+        Shortest path between vertex 3 and vertex 4 is 1199
+        Shortest path: 3 0 4
+
+        Elapsed time: 22 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data40.txt}
+    \begin{verbatim}
+        Shortest path between vertex 3 and vertex 4 is 1157
+        Shortest path: 3 36 4
+
+        Elapsed time: 78 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data60.txt}
+    \begin{verbatim}
+        Shortest path between vertex 3 and vertex 4 is 1152
+        Shortest path: 3 49 4
+
+        Elapsed time: 342 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data6_1.txt}
+    \begin{verbatim}
+        Shortest path between vertex 2 and vertex 5 is 11
+        Shortest path: 2 1 0 5
+
+        Elapsed time: 18 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data6_2.txt}
+    \begin{verbatim}
+        Shortest path between vertex 2 and vertex 5 is 2147483647
+        Shortest path:
+
+        Elapsed time: 15 milliseconds
+    \end{verbatim}
+
+    \subsubsection*{data80.txt}
+    \begin{verbatim}
+        Shortest path between vertex 4 and vertex 3 is 1152
+        Shortest path: 4 49 3
+
+        Elapsed time: 1177 milliseconds
+    \end{verbatim}
 \end{document}

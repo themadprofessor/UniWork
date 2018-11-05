@@ -54,24 +54,22 @@ public class Main {
 
 	private static void backtrack(Path curr, Set<Integer> unvisited, Graph graph, int end_index) {
 	    Vertex prev = graph.getVerts()[curr.lastVertex()];
-	    prev.getAdjList()
-                .values()
-                .stream()
-                .filter(node -> unvisited.contains(node.getIndex()))
-                .forEach(node -> {
-                    curr.pushEdge(node);
-                    unvisited.remove(node.getIndex());
+        for (Node node : prev.getAdjList().values()) {
+            if (unvisited.contains(node.getIndex())) {
+                curr.pushEdge(node);
+                unvisited.remove(node.getIndex());
 
-                    if (curr.weight < BEST_PATH.weight) {
-                        if (node.getIndex() == end_index) {
-                            BEST_PATH = (Path) curr.clone();
-                        } else {
-                            backtrack(curr, unvisited, graph, end_index);
-                        }
+                if (curr.weight < BEST_PATH.weight) {
+                    if (node.getIndex() == end_index) {
+                        BEST_PATH = (Path) curr.clone();
+                    } else {
+                        backtrack(curr, unvisited, graph, end_index);
                     }
+                }
 
-                    curr.popEdge(node);
-                    unvisited.add(node.getIndex());
-                });
+                curr.popEdge(node);
+                unvisited.add(node.getIndex());
+            }
+        }
     }
 }
