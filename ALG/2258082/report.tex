@@ -26,7 +26,7 @@ frequent get and contains calls.
 Being a HashMap, these calls would be O(1) based on the hash function used for an Integer (in the case of Integer, it is
 just the int value of the Integer).
 However, after completing the algorithm's implementation, it was shown the adjacency list was used exclusively for
-iteration, which is more efficently handled by an ArrayList.
+iteration, which is more efficiently handled by an ArrayList.
 
 In order to keep track of the current path, a HashMap<Vertex, Vertex> is used to store which vertex is before a given
 vertex in the path.
@@ -38,11 +38,12 @@ track of its index in this array).
 Once the Graph object is populated by parsing the input file, the starting vertex would be removed from the collection
 of unvisited vertices and marked as the current vertex.
 Then, the closest vertex to the current vertex would be then found.
-The distance from the starting vertex to the vertex closest to current would then be stored if it is shorter than the
-previous path to this vertex.
+The distance to each of the nodes adjacent to the closest vertex from the starting node is then calculated.
+If the new distance is shorter than the previously known distance to the node, its distance is updated.
+The closest vertex is then removed from the collection of unvisited vertices.
+This is then repeated for the vertex with the shortest known distance which is yet to be visited, until the vertex to be
+operated on is the final vertex.
 
-
-Here, explain how you implemented the Dijkstra's algorithm to compute and return the required information. Include a discussion of any steps that you took to improve efficiency including the reasoning behind your choice of data structures.
 
 \subsection*{Backtrack Search}
 
