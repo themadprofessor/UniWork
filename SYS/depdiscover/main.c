@@ -50,6 +50,7 @@ static char* copy_path(char* path) {
 int main(int argc, char** argv) {
     char* cpaths;
     char** paths;
+    int paths_len;
     int cpaths_count = 0;
     int arg_count = 0;
     int crawlers;
@@ -69,7 +70,8 @@ int main(int argc, char** argv) {
         }
     }
 
-    if ((paths = malloc(sizeof(char*) * (arg_count + cpaths_count + 1))) == NULL) {
+    paths_len = arg_count + cpaths_count + 1;
+    if ((paths = malloc(sizeof(char*) * paths_len)) == NULL) {
         fprintf(stderr, "failed to allocate memory for paths array\n");
         exit(EXIT_FAILURE);
     }
@@ -91,7 +93,11 @@ int main(int argc, char** argv) {
         paths[j+1] = p;
     }
 
-
+    for (int k = 0; k < paths_len; ++k) {
+        free(paths[k]);
+    }
+    free(paths);
+    printf("%d/n", arg_count);
 
     return 0;
 }
