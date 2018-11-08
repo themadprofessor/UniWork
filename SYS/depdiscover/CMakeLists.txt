@@ -3,6 +3,6 @@ project(depdiscover C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(depdiscover main.c)
+add_executable(depdiscover dependencyDiscoverer.c)
 add_library(tshtable tshtable.c)
 add_library(tsllist tsllist.c)

@@ -5,6 +5,7 @@
 struct lnode {
     struct lnode *next;
     void *element;
+    pthread_mutex_t lock;
 };
 
 struct llist {
@@ -40,12 +41,16 @@ int ll_add_to_head(LList *list, void *element) {
 
     p = (struct lnode *)malloc(sizeof(struct lnode));
     if (p != NULL) {
-        status = 1;
-        p->element = element;
-        p->next = list->head;
-        list->head = p;
-        if (!list->nelements++)
-            list->tail = p;
+        if (pthread_mutex_init(&p->lock, NULL) == 0) {
+            free(p);
+        } else {
+            status = 1;
+            p->element = element;
+            p->next = list->head;
+            list->head = p;
+            if (!list->nelements++)
+                list->tail = p;
+        }
     }
     return status;
 }
@@ -56,14 +61,18 @@ int ll_add_to_tail(LList *list, void *element) {
 
     p = (struct lnode *)malloc(sizeof(struct lnode));
     if (p != NULL) {
-        status = 1;
-        p->element = element;
-        p->next = NULL;
-        if (list->nelements++)
-            list->tail->next = p;
-        else
-            list->head = p;
-        list->tail = p;
+        if (pthread_mutex_init(&p->lock, NULL) == 0) {
+            free(p);
+        } else {
+            status = 1;
+            p->element = element;
+            p->next = NULL;
+            if (list->nelements++)
+                list->tail->next = p;
+            else
+                list->head = p;
+            list->tail = p;
+        }
     }
     return status;
 }
@@ -76,10 +85,12 @@ void *ll_remove_from_head(LList *list) {
 
     if (list->nelements) {
         p = list->head;
+        pthread_mutex_lock(&p->lock);
         list->head = p->next;
         if (!--list->nelements)
             list->tail = NULL;
         result = p->element;
+        pthread_mutex_destroy(&p->lock);
         free((void *)p);
     }
     return result;
