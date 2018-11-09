@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
+#include <ctype.h>
 
 struct tldlist {
 	TLDNode* root;
@@ -343,7 +344,9 @@ int tldlist_add(TLDList* tld, char* hostname, Date* d) {
 	if ((tld_str = malloc(tld_str_len * sizeof(char))) == NULL) {
 		return 0;
 	}
-	strncpy(tld_str, start_tld, tld_str_len);
+	for (int i = 0; i < tld_str_len; i++) {
+		tld_str[i] = tolower(start_tld[i]);
+	}
 
 	if (tld->root == NULL) {
 		TLDNode* node;
