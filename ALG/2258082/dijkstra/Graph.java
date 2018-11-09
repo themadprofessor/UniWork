@@ -6,7 +6,7 @@ public class Graph {
     public Graph(int num) {
         verts = new Vertex[num];
         for (int i = 0; i < num; i++) {
-            verts[i] = new Vertex(i);
+            verts[i] = new Vertex(i, num);
         }
     }
 

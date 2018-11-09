@@ -6,8 +6,8 @@ public class Vertex {
     private int index;
     private ArrayList<Node> adjList;
 
-    public Vertex(int index) {
-        adjList = new ArrayList<>();
+    public Vertex(int index, int vertCount) {
+        adjList = new ArrayList<>(vertCount);
         this.index = index;
     }
 

@@ -28,7 +28,19 @@ Status and Implementation Reports}
     Being a HashMap, these calls would be O(1) based on the hash function used for an Integer (in the case of Integer, it is
     just the int value of the Integer).
     However, after completing the algorithm's implementation, it was shown the adjacency list was used exclusively for
-    iteration, which is more efficiently handled by an ArrayList.
+    iteration after initialisation, which is more efficiently handled by an ArrayList.
+    The provided sample code used a LinkedList, while this may appear to be an optimal data structure, the use of a 
+    LinkedList is less efficent than using an ArrayList.
+    This is due to how a LinkedList is a data structure where each element is spread throughout memory, therefore is 
+    almost guaranteed to cause a cache miss, unlike an ArrayList, which is a wrapper to an array, which is sequential in
+    memory, greatly reducing the chance of a cache miss.
+    During initialisation, a LinkedList may also appear to be more efficient as an ArrayList would likely have to resize the 
+    internal array, however since we know the number of adjacent vertices cannot be greater than the total number of vertices
+    minus 1, we can preallocate the internal array for the ArrayList, making it more efficient at insertion than a LinkedList.
+    Preallocating the internal array of the ArrayList would cause a larger array than required, increasing the memory requirement
+    of the algorithm, this can be resolved by using ArrayList.trimToSize() which does require an extra allocation and copy, 
+    but this is an initialisation cost which allows the rest of the uses of the adjacency list to utilise the significantly
+    reduced chance of cache misses for optimisation.
 
     In order to keep track of the current path, a HashMap<Vertex, Vertex> is used to store which vertex is before a given
     vertex in the path.
