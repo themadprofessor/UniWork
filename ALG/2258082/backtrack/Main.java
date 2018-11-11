@@ -51,7 +51,9 @@ public class Main {
 
 	private static void backtrack(Path curr, boolean[] visited, Graph graph, int end_index) {
 	    Vertex prev = graph.getVerts()[curr.lastVertex()];
-        for (Node node : prev.getAdjList()) {
+        ArrayList<Node> adjList = prev.getAdjList();
+        for (int i = 0, adjListSize = adjList.size(); i < adjListSize; i++) {
+            Node node = adjList.get(i);
             if (!visited[node.getIndex()]) {
                 curr.pushEdge(node);
                 visited[node.getIndex()] = true;

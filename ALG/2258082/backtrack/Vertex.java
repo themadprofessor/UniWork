@@ -18,7 +18,7 @@ public class Vertex {
         this.index = index;
     }
 
-    public List<Node> getAdjList() {
+    public ArrayList<Node> getAdjList() {
         return adjList;
     }
 
