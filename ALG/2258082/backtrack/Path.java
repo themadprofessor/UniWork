@@ -13,7 +13,7 @@ public class Path {
     }
 
     public static Path max_path() {
-        return new Path(new ArrayDeque<>(), Integer.MAX_VALUE);
+        return new Path(new ArrayDeque<>(0), Integer.MAX_VALUE);
     }
 
     private Path(ArrayDeque<Integer> path, int weight) {

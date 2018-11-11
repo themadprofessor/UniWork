@@ -1,12 +1,12 @@
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Vertex {
     private int index;
-    private HashMap<Integer, Node> adjList;
+    private ArrayList<Node> adjList;
 
     public Vertex(int index) {
-        adjList = new HashMap<>();
+        adjList = new ArrayList<>();
         this.index = index;
     }
 
@@ -18,12 +18,12 @@ public class Vertex {
         this.index = index;
     }
 
-    public HashMap<Integer, Node> getAdjList() {
+    public List<Node> getAdjList() {
         return adjList;
     }
 
     public void addToAdjList(int index, int weight) {
-        adjList.put(index, new Node(index, weight));
+        adjList.add(new Node(index, weight));
     }
 
     public int degree() {
@@ -35,13 +35,12 @@ public class Vertex {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Vertex vertex = (Vertex) o;
-        return index == vertex.index &&
-                Objects.equals(adjList, vertex.adjList);
+        return index == vertex.index;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(index, adjList);
+        return index;
     }
 
     @Override
