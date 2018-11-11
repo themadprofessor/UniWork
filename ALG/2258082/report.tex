@@ -25,22 +25,26 @@ Status and Implementation Reports}
 
     Initially, the adjacency list of a Vertex was a HashMap<Integer, Node> as one assumed the algorithm would require
     frequent get and contains calls.
-    Being a HashMap, these calls would be O(1) based on the hash function used for an Integer (in the case of Integer, it is
-    just the int value of the Integer).
+    Being a HashMap, these calls would be O(1) based on the hash function used for an Integer (in the case of Integer,
+    it is just the int value of the Integer).
     However, after completing the algorithm's implementation, it was shown the adjacency list was used exclusively for
     iteration after initialisation, which is more efficiently handled by an ArrayList.
+
     The provided sample code used a LinkedList, while this may appear to be an optimal data structure, the use of a 
-    LinkedList is less efficent than using an ArrayList.
+    LinkedList is less efficient than using an ArrayList.
     This is due to how a LinkedList is a data structure where each element is spread throughout memory, therefore is 
     almost guaranteed to cause a cache miss, unlike an ArrayList, which is a wrapper to an array, which is sequential in
     memory, greatly reducing the chance of a cache miss.
-    During initialisation, a LinkedList may also appear to be more efficient as an ArrayList would likely have to resize the 
-    internal array, however since we know the number of adjacent vertices cannot be greater than the total number of vertices
-    minus 1, we can preallocate the internal array for the ArrayList, making it more efficient at insertion than a LinkedList.
-    Preallocating the internal array of the ArrayList would cause a larger array than required, increasing the memory requirement
-    of the algorithm, this can be resolved by using ArrayList.trimToSize() which does require an extra allocation and copy, 
-    but this is an initialisation cost which allows the rest of the uses of the adjacency list to utilise the significantly
-    reduced chance of cache misses for optimisation.
+    During initialisation, a LinkedList may also appear to be more efficient as an ArrayList would likely have to resize
+    the internal array, however since we know the number of adjacent vertices cannot be greater than the total number of
+    vertices minus 1, we can preallocate the internal array for the ArrayList, making it more efficient at insertion
+    than a LinkedList.
+    Preallocating the internal array of the ArrayList would cause a larger array than required,
+    increasing the memory requirement of the algorithm, this can be resolved by using ArrayList.trimToSize() which does
+    require an extra allocation and copy, but this is an initialisation cost which allows the rest of the uses of the
+    adjacency list to utilise the significantly reduced chance of cache misses for optimisation.
+    Ultimately, ArrayList.trimToSize was not used as the data provided is unlikely to cause any issue with memory
+    limitations.
 
     In order to keep track of the current path, a HashMap<Vertex, Vertex> is used to store which vertex is before a given
     vertex in the path.
@@ -63,10 +67,17 @@ Status and Implementation Reports}
 
     Initially, the iteration with each recursion was implemented using the Stream API, in an attempt to provide more
     readable code for initial implementation.
-    An alternative implementation using a foeach loop executed in a third of the time was then used.
+    An alternative implementation using a foreach loop executed in a third of the time was then used until an
+    implementation using an indexing for loop was found to further reduces run time.
 
-    The set of unvisited vertices is implemented as a HashSet<Integer> since this would allow for O(1) insertion, removal
-    and contains operations, which are called each iteration of the loop within each recursion.
+    The set of unvisited vertices initially was implemented as a HashSet<Integer> since this would allow for O(1)
+    insertion, removal and contains operations, which are called each iteration of the loop within each recursion.
+    This was then replaced with a boolean[] where each boolean represented if the vertex with given index has been
+    visited.
+    Using an array removed the requirement for removal and contains operations, changing the only required operation to
+    be accessing the an element within the array.
+    Even though both HashSet's methods and array access are O(1), array accesses constant is significantly lower than
+    HashSet's.
 
     Once the Graph object is populated by parsing the input file, the starting vertex would be removed from the collection
     of unvisited vertices and marked as the current vertex.
