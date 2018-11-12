@@ -1,5 +1,6 @@
 \documentclass{article}
 \usepackage{amsmath,amssymb,graphicx}
+\usepackage[utf8]{inputenc}
 \usepackage[a4paper,includeheadfoot,margin=2.54cm]{geometry}
 
 
@@ -23,7 +24,7 @@ Status and Implementation Reports}
 
     \subsection*{Dijkstra's Algorithm}
 
-    Initially, the adjacency list of a Vertex was a HashMap<Integer, Node> as one assumed the algorithm would require
+    Initially, the adjacency list of a Vertex was a HashMap as one assumed the algorithm would require
     frequent get and contains calls.
     Being a HashMap, these calls would be O(1) based on the hash function used for an Integer (in the case of Integer,
     it is just the int value of the Integer).
@@ -46,7 +47,7 @@ Status and Implementation Reports}
     Ultimately, ArrayList.trimToSize was not used as the data provided is unlikely to cause any issue with memory
     limitations.
 
-    In order to keep track of the current path, a HashMap<Vertex, Vertex> is used to store which vertex is before a given
+    In order to keep track of the current path, a HashMap is used to store which vertex is before a given
     vertex in the path.
     The use of a HashMap over a list allows for O(1) insertion and access, which are the only uses of this object.
 
@@ -70,7 +71,7 @@ Status and Implementation Reports}
     An alternative implementation using a foreach loop executed in a third of the time was then used until an
     implementation using an indexing for loop was found to further reduces run time.
 
-    The set of unvisited vertices initially was implemented as a HashSet<Integer> since this would allow for O(1)
+    The set of unvisited vertices initially was implemented as a HashSet since this would allow for O(1)
     insertion, removal and contains operations, which are called each iteration of the loop within each recursion.
     This was then replaced with a boolean[] where each boolean represented if the vertex with given index has been
     visited.
@@ -177,7 +178,7 @@ Status and Implementation Reports}
         Elapsed time: 154 milliseconds
     \end{verbatim}
 
-    \subsubsection*{data6_1.txt}
+    \subsubsection*{data6\_1.txt}
     \begin{verbatim}
         Shortest path between vertex 2 and vertex 5 is 11
         Shortest path: 2 1 0 5
@@ -185,7 +186,7 @@ Status and Implementation Reports}
         Elapsed time: 57 milliseconds
     \end{verbatim}
 
-    \subsubsection*{data6_2.txt}
+    \subsubsection*{data6\_2.txt}
     \begin{verbatim}
         Shortest path between vertex 2 and vertex 5 is 2147483647
         Shortest path:
