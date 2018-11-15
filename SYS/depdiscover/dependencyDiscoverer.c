@@ -295,7 +295,7 @@ int main(int argc, char *argv[]) {
 
     // 5. for each file argument ...
     for (i = start; i < argc; i++) {
-        char root[256], ext[256], obj[256];
+        char root[256], ext[256], obj[259];
         parseFile(argv[i], root, ext);
         if (strcmp(ext, "c") != 0 && strcmp(ext, "y") != 0 &&
             strcmp(ext, "l") != 0) {
@@ -333,7 +333,7 @@ int main(int argc, char *argv[]) {
     for (i = start; i < argc; i++) {
         TSHTable *printed;
         LList *toProcess;
-        char root[256], ext[256], obj[256];
+        char root[256], ext[256], obj[259];
         char **keys;
         int n, j;
         void *dummy;

@@ -23,7 +23,7 @@ struct tshtable {
     unsigned long size;
     unsigned long nelements;
     H_Node *table;
-    pthread_mutex_t* mutex;
+    pthread_rwlock_t lock;
 };
 
 struct htiterator {
@@ -58,7 +58,7 @@ TSHTable *tsht_create(unsigned long size) {
         N = ((size > 0) ? size : DEFAULT_SIZE);
         array = (H_Node *)malloc(N * sizeof(H_Node));
         if (array != NULL) {
-            if (pthread_mutex_init(t->mutex, NULL) != 0) {
+            if (pthread_rwlock_init(&t->lock, NULL) != 0) {
                 free(array);
                 free(t);
                 return NULL;
@@ -83,7 +83,7 @@ int tsht_delete(TSHTable *ht) {
         ans = 1;
     }
     if (ans) {
-        pthread_mutex_destroy(ht->mutex);
+        pthread_rwlock_destroy(&ht->lock);
         free(ht->table);
         free(ht);
     }
@@ -94,14 +94,14 @@ int tsht_insert(TSHTable *ht, char *str, void *datum, void **old) {
     unsigned long hash;
     H_Entry *p;
 
-    pthread_mutex_lock(ht->mutex);
+    pthread_rwlock_wrlock(&ht->lock);
     hash = gen_hash(str, ht->size);
     p = ht->table[hash].first;
     while (p != NULL) {
         if (strcmp(str, p->key) == 0) {
             if (old) { *old = p->datum; }
             p->datum = datum;
-            pthread_mutex_unlock(ht->mutex);
+            pthread_rwlock_unlock(&ht->lock);
             return 1;
         }
         p = p->next;
@@ -111,7 +111,7 @@ int tsht_insert(TSHTable *ht, char *str, void *datum, void **old) {
         char *s = strdup(str);
         if (s == NULL) {
             free((void *)p);
-            pthread_mutex_unlock(ht->mutex);
+            pthread_rwlock_unlock(&ht->lock);
             return 0;
         }
         p->key = s;
@@ -120,10 +120,10 @@ int tsht_insert(TSHTable *ht, char *str, void *datum, void **old) {
         ht->table[hash].first = p;
         ht->nelements++;
         if (old) { *old = NULL; }
-        pthread_mutex_unlock(ht->mutex);
+        pthread_rwlock_unlock(&ht->lock);
         return 1;
     }
-    pthread_mutex_unlock(ht->mutex);
+    pthread_rwlock_unlock(&ht->lock);
     return 0;
 }
 
@@ -131,17 +131,17 @@ void *tsht_lookup(TSHTable *ht, char *str) {
     unsigned long hash;
     H_Entry *p;
 
-    pthread_mutex_lock(ht->mutex);
+    pthread_rwlock_rdlock(&ht->lock);
     hash = gen_hash(str, ht->size);
     p = ht->table[hash].first;
     while (p != NULL) {
         if (strcmp(str, p->key) == 0) {
-            pthread_mutex_unlock(ht->mutex);
+            pthread_rwlock_unlock(&ht->lock);
             return p->datum;
         }
         p = p->next;
     }
-    pthread_mutex_unlock(ht->mutex);
+    pthread_rwlock_unlock(&ht->lock);
     return NULL;
 }
 
@@ -150,7 +150,7 @@ int tsht_remove(TSHTable *ht, char *str, void **datum) {
     H_Entry *p, *q;
     int found = 0;
 
-    pthread_mutex_lock(ht->mutex);
+    pthread_rwlock_wrlock(&ht->lock);
     hash = gen_hash(str, ht->size);
     p = ht->table[hash].first;
     q = NULL;
@@ -172,12 +172,12 @@ int tsht_remove(TSHTable *ht, char *str, void **datum) {
         free((void *)p->key);
         free((void *)p);
     }
-    pthread_mutex_unlock(ht->mutex);
+    pthread_rwlock_unlock(&ht->lock);
     return found;
 }
 
 int tsht_keys(TSHTable *ht, char ***theKeys) {
-    pthread_mutex_lock(ht->mutex);
+    pthread_rwlock_rdlock(&ht->lock);
     int ans = ht->nelements;
     if (!ans) { /* an empty table */
         *theKeys = NULL;
@@ -200,7 +200,7 @@ int tsht_keys(TSHTable *ht, char ***theKeys) {
         }
         *theKeys = keys;
     }
-    pthread_mutex_unlock(ht->mutex);
+    pthread_rwlock_unlock(&ht->lock);
     return ans;
 }
 
@@ -210,7 +210,7 @@ int tsht_keys(TSHTable *ht, char ***theKeys) {
 HTIterator *tsht_iter_create(TSHTable *ht) {
     HTIterator *iter = (HTIterator *)malloc(sizeof(HTIterator));
     if (iter) {
-        pthread_mutex_lock(ht->mutex);
+        pthread_rwlock_rdlock(&ht->lock);
         iter->ht = ht;
         iter->ndx = -1;
         iter->entry = NULL;
@@ -242,6 +242,6 @@ HTIterValue *tsht_iter_next(HTIterator *iter) {
 }
 
 void tsht_iter_delete(HTIterator *iter) {
-    pthread_mutex_unlock(iter->ht->mutex);
+    pthread_rwlock_unlock(&iter->ht->lock);
     free((void *)iter);
 }
