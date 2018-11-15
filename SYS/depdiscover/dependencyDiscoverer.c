@@ -110,6 +110,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 static char **dir = NULL;
 static TSHTable *theTable = NULL;
@@ -237,6 +238,21 @@ static void printDependencies(TSHTable *printed, LList *toProcess, FILE *fd) {
     }
 }
 
+static void* thread() {
+    char* st;
+    while ((st = (char *)ll_remove_from_head(workQ)) != NULL) {
+        // 6a. loopup list of dependencies
+        LList *ll = (LList *)tsht_lookup(theTable, st);
+        if (ll == NULL) {
+            fprintf(stderr, "Mismatch between table and workQ\n");
+            return NULL;
+        }
+        // 6b. invoke process
+        process(st, ll);
+    }
+    return NULL;
+}
+
 int main(int argc, char *argv[]) {
     int n, m;
     int start, i, j;
@@ -244,7 +260,7 @@ int main(int argc, char *argv[]) {
 
     // 1. look up CPATH in environment
     char *cpath = getenv("CPATH");
-    char *st;
+//    char *st;
 
     // determine the number of fields in CPATH
     n = 0;
@@ -317,6 +333,27 @@ int main(int argc, char *argv[]) {
         ll_add_to_tail(workQ, strdup(argv[i]));
     }
 
+    char* env_str = getenv("CRAWLER_THREADS");
+    int crawler_threads;
+    if (env_str == NULL || (crawler_threads = (int) strtol(env_str, NULL, 10)) == 0) {
+        crawler_threads = 2;
+    }
+    pthread_t* threads;
+    if ((threads = calloc(crawler_threads, sizeof(pthread_t))) == NULL) {
+        fprintf(stderr, "Unable to create thread array\n");
+        return -1;
+    }
+
+    for (int k = 0; k < crawler_threads; ++k) {
+        pthread_create(&threads[k], NULL, &thread, NULL);
+    }
+
+    for (int l = 0; l < crawler_threads; ++l) {
+        pthread_join(threads[l], NULL);
+    }
+    free(threads);
+
+/*
     // 6. for each file on the workQ
     while ((st = (char *)ll_remove_from_head(workQ)) != NULL) {
         // 6a. loopup list of dependencies
@@ -327,7 +364,7 @@ int main(int argc, char *argv[]) {
         }
         // 6b. invoke process
         process(st, ll);
-    }
+    }*/
 
     // 7. for each file argument
     for (i = start; i < argc; i++) {
