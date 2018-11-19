@@ -249,6 +249,7 @@ static void* thread() {
         }
         // 6b. invoke process
         process(st, ll);
+        free(st);
     }
     return NULL;
 }
@@ -260,7 +261,6 @@ int main(int argc, char *argv[]) {
 
     // 1. look up CPATH in environment
     char *cpath = getenv("CPATH");
-//    char *st;
 
     // determine the number of fields in CPATH
     n = 0;
@@ -352,6 +352,7 @@ int main(int argc, char *argv[]) {
         pthread_join(threads[l], NULL);
     }
     free(threads);
+    //ll_destroy(workQ, true);
 
 /*
     // 6. for each file on the workQ
@@ -396,6 +397,7 @@ int main(int argc, char *argv[]) {
             tsht_remove(printed, keys[k], &dummy);
         free(keys);
         tsht_delete(printed);
+        ll_destroy(toProcess, true);
     }
 
     return 0;
