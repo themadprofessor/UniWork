@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define DEFAULT_SIZE 1024l
 
@@ -178,7 +179,7 @@ int tsht_remove(TSHTable *ht, char *str, void **datum) {
 
 int tsht_keys(TSHTable *ht, char ***theKeys) {
     pthread_rwlock_rdlock(&ht->lock);
-    int ans = ht->nelements;
+    int ans = (int) ht->nelements;
     if (!ans) { /* an empty table */
         *theKeys = NULL;
     } else {

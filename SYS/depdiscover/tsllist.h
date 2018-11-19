@@ -1,6 +1,8 @@
 #ifndef _LLIST_H_
 #define _LLIST_H_
 
+#include <stdbool.h>
+
 /*
  * interface to generic linked list
  *
@@ -12,6 +14,7 @@ typedef struct lliterator LLIterator;
 
 /* constructor */
 LList *ll_create(void);
+void ll_destroy(LList* l, bool free_data);
 
 /* add element to the list, either at the head or at the tail
    returns 1 if successful, 0 if unsuccessful */

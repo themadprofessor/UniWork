@@ -23,6 +23,16 @@ struct lliterator {
     void **values;
 };
 
+static void lnode_destroy(struct lnode* node, bool free_data) {
+    if (node->next != NULL) {
+        lnode_destroy(node->next, free_data);
+    }
+    if (free_data) {
+        free(node->element);
+    }
+    free(node);
+}
+
 /* constructor */
 LList *ll_create(void) {
     LList *list = (LList *)malloc(sizeof(LList));
@@ -42,6 +52,18 @@ LList *ll_create(void) {
         }
     }
     return list;
+}
+
+void ll_destroy(LList* l, bool free_data) {
+    pthread_mutex_lock(&l->head_mutex);
+    pthread_mutex_lock(&l->tail_mutex);
+
+    if (l->head != NULL) {
+        lnode_destroy(l->head, free_data);
+    }
+    pthread_mutex_unlock(&l->head_mutex);
+    pthread_mutex_unlock(&l->tail_mutex);
+    free(l);
 }
 
 /* add element to the list, either at the head or at the tail
