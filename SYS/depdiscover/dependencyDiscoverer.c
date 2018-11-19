@@ -104,8 +104,8 @@
  *               by the dirs[] array.
  */
 
-#include "single/tshtable.h"
-#include "single/tsllist.h"
+#include "tshtable.h"
+#include "tsllist.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
