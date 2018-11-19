@@ -352,7 +352,10 @@ int main(int argc, char *argv[]) {
         pthread_join(threads[l], NULL);
     }
     free(threads);
-    //ll_destroy(workQ, true);
+    for (int dir_i = 0; dir[dir_i] != NULL; dir_i++) {
+        free(dir[dir_i]);
+    }
+    free(dir);
 
 /*
     // 6. for each file on the workQ
@@ -399,6 +402,18 @@ int main(int argc, char *argv[]) {
         tsht_delete(printed);
         ll_destroy(toProcess, true);
     }
+
+    char** table_keys;
+    void* dummy;
+    int keys_len = tsht_keys(theTable, &table_keys);
+    for (int k = 0; k < keys_len; ++k) {
+        tsht_remove(theTable, table_keys[k], &dummy);
+        ll_destroy(dummy, true);
+    }
+    free(table_keys);
+
+    tsht_delete(theTable);
+    ll_destroy(workQ, true);
 
     return 0;
 }
