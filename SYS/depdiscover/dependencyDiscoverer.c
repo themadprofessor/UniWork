@@ -339,7 +339,7 @@ int main(int argc, char *argv[]) {
         crawler_threads = 2;
     }
     pthread_t* threads;
-    if ((threads = calloc(crawler_threads, sizeof(pthread_t))) == NULL) {
+    if ((threads = calloc((size_t) crawler_threads, sizeof(pthread_t))) == NULL) {
         fprintf(stderr, "Unable to create thread array\n");
         return -1;
     }
@@ -372,7 +372,7 @@ int main(int argc, char *argv[]) {
         LList *toProcess;
         char root[256], ext[256], obj[259];
         char **keys;
-        int n, j;
+        int key_count, k;
         void *dummy;
 
         // 7a. create hash table in which to track file names already printed
@@ -391,9 +391,9 @@ int main(int argc, char *argv[]) {
         printDependencies(printed, toProcess, stdout);
         printf("\n");
         // 7e. cleanup
-        n = tsht_keys(printed, &keys);
-        for (j = 0; j < n; j++)
-            tsht_remove(printed, keys[j], &dummy);
+        key_count = tsht_keys(printed, &keys);
+        for (k = 0; k < key_count; k++)
+            tsht_remove(printed, keys[k], &dummy);
         free(keys);
         tsht_delete(printed);
     }
