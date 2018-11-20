@@ -1,6 +1,8 @@
 #ifndef _TSHTABLE_H_
 #define _TSHTABLE_H_
 
+#include <stdbool.h>
+
 /*
  * interface to generic hash table
  * associates a key string with a void *datum

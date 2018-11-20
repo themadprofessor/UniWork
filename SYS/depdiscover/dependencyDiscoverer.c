@@ -104,12 +104,13 @@
  *               by the dirs[] array.
  */
 
-#include "single/tshtable.h"
-#include "single/tsllist.h"
+#include "tshtable.h"
+#include "tsllist.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 static char **dir = NULL;
 static TSHTable *theTable = NULL;
@@ -237,6 +238,22 @@ static void printDependencies(TSHTable *printed, LList *toProcess, FILE *fd) {
     }
 }
 
+static void* thread() {
+    char* st;
+    while ((st = (char *)ll_remove_from_head(workQ)) != NULL) {
+        // 6a. loopup list of dependencies
+        LList *ll = (LList *)tsht_lookup(theTable, st);
+        if (ll == NULL) {
+            fprintf(stderr, "Mismatch between table and workQ\n");
+            return NULL;
+        }
+        // 6b. invoke process
+        process(st, ll);
+        free(st);
+    }
+    return NULL;
+}
+
 int main(int argc, char *argv[]) {
     int n, m;
     int start, i, j;
@@ -244,7 +261,6 @@ int main(int argc, char *argv[]) {
 
     // 1. look up CPATH in environment
     char *cpath = getenv("CPATH");
-    char *st;
 
     // determine the number of fields in CPATH
     n = 0;
@@ -295,7 +311,7 @@ int main(int argc, char *argv[]) {
 
     // 5. for each file argument ...
     for (i = start; i < argc; i++) {
-        char root[256], ext[256], obj[256];
+        char root[256], ext[256], obj[259];
         parseFile(argv[i], root, ext);
         if (strcmp(ext, "c") != 0 && strcmp(ext, "y") != 0 &&
             strcmp(ext, "l") != 0) {
@@ -317,6 +333,31 @@ int main(int argc, char *argv[]) {
         ll_add_to_tail(workQ, strdup(argv[i]));
     }
 
+    char* env_str = getenv("CRAWLER_THREADS");
+    int crawler_threads;
+    if (env_str == NULL || (crawler_threads = (int) strtol(env_str, NULL, 10)) == 0) {
+        crawler_threads = 2;
+    }
+    pthread_t* threads;
+    if ((threads = calloc((size_t) crawler_threads, sizeof(pthread_t))) == NULL) {
+        fprintf(stderr, "Unable to create thread array\n");
+        return -1;
+    }
+
+    for (int k = 0; k < crawler_threads; ++k) {
+        pthread_create(&threads[k], NULL, &thread, NULL);
+    }
+
+    for (int l = 0; l < crawler_threads; ++l) {
+        pthread_join(threads[l], NULL);
+    }
+    free(threads);
+    for (int dir_i = 0; dir[dir_i] != NULL; dir_i++) {
+        free(dir[dir_i]);
+    }
+    free(dir);
+
+/*
     // 6. for each file on the workQ
     while ((st = (char *)ll_remove_from_head(workQ)) != NULL) {
         // 6a. loopup list of dependencies
@@ -327,15 +368,15 @@ int main(int argc, char *argv[]) {
         }
         // 6b. invoke process
         process(st, ll);
-    }
+    }*/
 
     // 7. for each file argument
     for (i = start; i < argc; i++) {
         TSHTable *printed;
         LList *toProcess;
-        char root[256], ext[256], obj[256];
+        char root[256], ext[256], obj[259];
         char **keys;
-        int n, j;
+        int key_count, k;
         void *dummy;
 
         // 7a. create hash table in which to track file names already printed
@@ -354,12 +395,25 @@ int main(int argc, char *argv[]) {
         printDependencies(printed, toProcess, stdout);
         printf("\n");
         // 7e. cleanup
-        n = tsht_keys(printed, &keys);
-        for (j = 0; j < n; j++)
-            tsht_remove(printed, keys[j], &dummy);
+        key_count = tsht_keys(printed, &keys);
+        for (k = 0; k < key_count; k++)
+            tsht_remove(printed, keys[k], &dummy);
         free(keys);
         tsht_delete(printed);
+        ll_destroy(toProcess, true);
     }
+
+    char** table_keys;
+    void* dummy;
+    int keys_len = tsht_keys(theTable, &table_keys);
+    for (int k = 0; k < keys_len; ++k) {
+        tsht_remove(theTable, table_keys[k], &dummy);
+        ll_destroy(dummy, true);
+    }
+    free(table_keys);
+
+    tsht_delete(theTable);
+    ll_destroy(workQ, true);
 
     return 0;
 }
