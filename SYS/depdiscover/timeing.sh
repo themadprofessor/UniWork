@@ -1,4 +1,5 @@
 #!/bin/bash
+rm -f crawlers.txt
 make > /dev/null
 for i in 1 2 4 8; do
 	echo "$i crawlers" >> crawlers.txt
