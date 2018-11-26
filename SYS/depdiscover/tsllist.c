@@ -12,8 +12,7 @@ struct llist {
     struct lnode *head;
     struct lnode *tail;
     unsigned long nelements;
-    pthread_mutex_t head_mutex;
-    pthread_mutex_t tail_mutex;
+    pthread_mutex_t mutex;
 };
 
 struct lliterator {
@@ -41,12 +40,7 @@ LList *ll_create(void) {
         list->head = NULL;
         list->tail = NULL;
         list->nelements = 0L;
-        if (pthread_mutex_init(&list->head_mutex, NULL) != 0) {
-            free(list);
-            return NULL;
-        }
-        if (pthread_mutex_init(&list->tail_mutex, NULL) != 0) {
-            pthread_mutex_destroy(&list->head_mutex);
+        if (pthread_mutex_init(&list->mutex, NULL) != 0) {
             free(list);
             return NULL;
         }
@@ -55,14 +49,13 @@ LList *ll_create(void) {
 }
 
 void ll_destroy(LList* l, bool free_data) {
-    pthread_mutex_lock(&l->head_mutex);
-    pthread_mutex_lock(&l->tail_mutex);
+    pthread_mutex_lock(&l->mutex);
 
     if (l->head != NULL) {
         lnode_destroy(l->head, free_data);
     }
-    pthread_mutex_unlock(&l->head_mutex);
-    pthread_mutex_unlock(&l->tail_mutex);
+    pthread_mutex_unlock(&l->mutex);
+    pthread_mutex_destroy(&l->mutex);
     free(l);
 }
 
@@ -74,12 +67,14 @@ int ll_add_to_head(LList *list, void *element) {
 
     p = (struct lnode *)malloc(sizeof(struct lnode));
     if (p != NULL) {
+	pthread_mutex_lock(&list->mutex);
         status = 1;
         p->element = element;
         p->next = list->head;
         list->head = p;
         if (!list->nelements++)
             list->tail = p;
+	pthread_mutex_unlock(&list->mutex);
     }
     return status;
 }
@@ -90,19 +85,17 @@ int ll_add_to_tail(LList *list, void *element) {
 
     p = (struct lnode *)malloc(sizeof(struct lnode));
     if (p != NULL) {
-        pthread_mutex_lock(&list->tail_mutex);
+        pthread_mutex_lock(&list->mutex);
         status = 1;
         p->element = element;
         p->next = NULL;
         if (list->nelements++) {
             list->tail->next = p;
         } else {
-            pthread_mutex_lock(&list->head_mutex);
             list->head = p;
-            pthread_mutex_unlock(&list->head_mutex);
         }
         list->tail = p;
-        pthread_mutex_unlock(&list->tail_mutex);
+        pthread_mutex_unlock(&list->mutex);
     }
     return status;
 }
@@ -113,19 +106,17 @@ void *ll_remove_from_head(LList *list) {
     struct lnode *p;
     void *result = NULL;
 
+    pthread_mutex_lock(&list->mutex);
     if (list->nelements) {
-        pthread_mutex_lock(&list->head_mutex);
         p = list->head;
         list->head = p->next;
         if (!--list->nelements) {
-            pthread_mutex_lock(&list->tail_mutex);
             list->tail = NULL;
-            pthread_mutex_unlock(&list->tail_mutex);
         }
         result = p->element;
         free((void *)p);
-        pthread_mutex_unlock(&list->head_mutex);
     }
+    pthread_mutex_unlock(&list->mutex);
     return result;
 }
 
@@ -133,7 +124,9 @@ void *ll_remove_from_head(LList *list) {
 unsigned long ll_nelements(LList *list) {
     unsigned long ans;
 
+    pthread_mutex_lock(&list->mutex);
     ans = list->nelements;
+    pthread_mutex_unlock(&list->mutex);
     return ans;
 }
 
@@ -144,6 +137,7 @@ unsigned long ll_nelements(LList *list) {
 LLIterator *ll_iter_create(LList *list) {
     LLIterator *it = (LLIterator *)malloc(sizeof(LLIterator));
     if (it != NULL) {
+        pthread_mutex_lock(&list->mutex);
         it->next = 0;
         it->size = list->nelements;
         it->ll = list;
@@ -152,9 +146,8 @@ LLIterator *ll_iter_create(LList *list) {
             if (it->values == NULL) {
                 free(it);
                 it = NULL;
+		pthread_mutex_unlock(&list->mutex);
             } else {
-                pthread_mutex_lock(&list->tail_mutex);
-                pthread_mutex_lock(&list->head_mutex);
                 struct lnode *p = list->head;
                 unsigned long i;
                 for (i = 0; i < list->nelements; i++) {
@@ -184,7 +177,6 @@ void *ll_iter_next(LLIterator *it) {
 void ll_iter_delete(LLIterator *it) {
     if (it->values != NULL)
         free(it->values);
-    pthread_mutex_unlock(&it->ll->tail_mutex);
-    pthread_mutex_unlock(&it->ll->head_mutex);
+    pthread_mutex_unlock(&it->ll->mutex);
     free(it);
 }
