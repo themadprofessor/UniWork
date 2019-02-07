@@ -1,3 +1,6 @@
+//Stuart Relly 2258082
+//This is my own work as defined in the Academic Ethics agreement I have signed.
+
 #include "tsllist.h"
 #include <pthread.h>
 #include <stdlib.h>

@@ -1,3 +1,6 @@
+//Stuart Reilly 2258082
+//This is my own work as defined in the Academic Ethics agreement I have signed.
+
 #ifndef _LLIST_H_
 #define _LLIST_H_
 

@@ -1,3 +1,6 @@
+//Stuart Reilly 2258082
+//This is my own work as defined in the Academic Ethics agreement I have signed.
+
 /*
  * usage: ./dependencyDiscoverer [-Idir] ... file.c|file.l|file.y ...
  *
@@ -336,24 +339,24 @@ int main(int argc, char *argv[]) {
     char* env_str = getenv("CRAWLER_THREADS");
     int crawler_threads;
     if (env_str == NULL || (crawler_threads = (int) strtol(env_str, NULL, 10)) == 0) {
-        crawler_threads = 2;
+	crawler_threads = 2;
     }
     pthread_t* threads;
     if ((threads = calloc((size_t) crawler_threads, sizeof(pthread_t))) == NULL) {
-        fprintf(stderr, "Unable to create thread array\n");
-        return -1;
+	fprintf(stderr, "Unable to create thread array\n");
+	return -1;
     }
 
     for (int k = 0; k < crawler_threads; ++k) {
-        pthread_create(&threads[k], NULL, &thread, NULL);
+	pthread_create(&threads[k], NULL, &thread, NULL);
     }
 
     for (int l = 0; l < crawler_threads; ++l) {
-        pthread_join(threads[l], NULL);
+	pthread_join(threads[l], NULL);
     }
     free(threads);
     for (int dir_i = 0; dir[dir_i] != NULL; dir_i++) {
-        free(dir[dir_i]);
+	free(dir[dir_i]);
     }
     free(dir);
 

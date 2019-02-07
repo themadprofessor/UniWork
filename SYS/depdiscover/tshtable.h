@@ -1,3 +1,6 @@
+//Stuart Reilly
+//This is my own work as defined in the Academic Ethics agreement I have signed.
+
 #ifndef _TSHTABLE_H_
 #define _TSHTABLE_H_
 

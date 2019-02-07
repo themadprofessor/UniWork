@@ -1,3 +1,6 @@
+//Stuart Reilly 2258082
+//This is my own work as defined in the Academic Ethics agreement I have signed.
+
 #include "tshtable.h"
 #include <pthread.h>
 #include <stdio.h>
