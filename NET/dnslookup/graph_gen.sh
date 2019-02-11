@@ -7,6 +7,6 @@ parse_trace () {
 export -f parse_trace
 
 { echo "graph routertopology {" && ./dnslookup $domains | awk '{print $3}' | sed '/:/d' | xargs -d '\n' -I "%" -n 1 bash -c 'parse_trace "%"' | sort | uniq && echo "}"; } > router-4.dot
-{ echo "graph routertopology {" && ./dnslookup $domains | awk '{print $3}' | sed '/\./d' | xargs -d '\n' -n 1 -I "%" -n 1 bash -c 'parse_trace "%"'  | sort | uniq && echo "}"; } > router-6.dot
+{ echo "graph routertopology {" && ./dnslookup $domains | awk '{print $3}' | sed '/\./d' | xargs -d '\n' -I "%" -n 1 bash -c 'parse_trace "%"' | sort | uniq && echo "}"; } > router-6.dot
 dot -Tpdf router-4.dot -o router-topology-v4.pdf
 dot -Tpdf router-6.dot -o router-topology-v6.pdf
