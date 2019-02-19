@@ -4,7 +4,7 @@
 #include <arpa/inet.h>
 
 #define eprintf(...) fprintf(stderr, __VA_ARGS__)
-#define BUFFER_SIZE 39 // max size of IPv6 address string
+#define BUFFER_SIZE 40 // max size of IPv6 address string
 #define ERR_ARGS 1
 #define ERR_ADDRINFO 2
 #define ERR_CONV 3
@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
 
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = PF_UNSPEC;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
     for (int i = 1; i < argc; i++) {
@@ -32,7 +32,10 @@ int main(int argc, char* argv[]) {
         struct addrinfo* curr_addr;
         for (curr_addr = addrinfo_list; curr_addr != NULL; curr_addr = curr_addr->ai_next) {
             char buffer[BUFFER_SIZE] = {0};
-            if (inet_ntop(curr_addr->ai_family, &((struct sockaddr_in*)curr_addr->ai_addr)->sin_addr, buffer, sizeof(buffer)) == NULL) {
+            void * bin_addr = curr_addr->ai_family == AF_INET6
+                    ? (void *)&((struct sockaddr_in6*)curr_addr->ai_addr)->sin6_addr
+                            : (void *)&((struct sockaddr_in*)curr_addr->ai_addr)->sin_addr;
+            if (inet_ntop(curr_addr->ai_family, bin_addr, buffer, sizeof(buffer)) == NULL) {
                 perror("unable to convert IP address to string");
                 return ERR_CONV;
             }

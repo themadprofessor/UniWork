@@ -9,6 +9,78 @@
 #include <OpenCL/opencl.h>
 #endif
 
+#define CL_ERR_STR(err) case err: return #err;
+
+const char* clErrorString(int err) {
+    switch (err) {
+        CL_ERR_STR(CL_SUCCESS)
+        CL_ERR_STR(CL_DEVICE_NOT_FOUND)
+        CL_ERR_STR(CL_DEVICE_NOT_AVAILABLE)
+        CL_ERR_STR(CL_COMPILER_NOT_AVAILABLE)
+        CL_ERR_STR(CL_MEM_OBJECT_ALLOCATION_FAILURE)
+        CL_ERR_STR(CL_OUT_OF_RESOURCES)
+        CL_ERR_STR(CL_OUT_OF_HOST_MEMORY)
+        CL_ERR_STR(CL_PROFILING_INFO_NOT_AVAILABLE)
+        CL_ERR_STR(CL_MEM_COPY_OVERLAP)
+        CL_ERR_STR(CL_IMAGE_FORMAT_MISMATCH)
+        CL_ERR_STR(CL_IMAGE_FORMAT_NOT_SUPPORTED)
+        CL_ERR_STR(CL_BUILD_PROGRAM_FAILURE)
+        CL_ERR_STR(CL_MAP_FAILURE)
+        CL_ERR_STR(CL_MISALIGNED_SUB_BUFFER_OFFSET)
+        CL_ERR_STR(CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST)
+        CL_ERR_STR(CL_COMPILE_PROGRAM_FAILURE)
+        CL_ERR_STR(CL_LINKER_NOT_AVAILABLE)
+        CL_ERR_STR(CL_LINK_PROGRAM_FAILURE)
+        CL_ERR_STR(CL_DEVICE_PARTITION_FAILED)
+        CL_ERR_STR(CL_KERNEL_ARG_INFO_NOT_AVAILABLE)
+        CL_ERR_STR(CL_INVALID_VALUE)
+        CL_ERR_STR(CL_INVALID_DEVICE_TYPE)
+        CL_ERR_STR(CL_INVALID_PLATFORM)
+        CL_ERR_STR(CL_INVALID_DEVICE)
+        CL_ERR_STR(CL_INVALID_CONTEXT)
+        CL_ERR_STR(CL_INVALID_QUEUE_PROPERTIES)
+        CL_ERR_STR(CL_INVALID_COMMAND_QUEUE)
+        CL_ERR_STR(CL_INVALID_HOST_PTR)
+        CL_ERR_STR(CL_INVALID_MEM_OBJECT)
+        CL_ERR_STR(CL_INVALID_IMAGE_FORMAT_DESCRIPTOR)
+        CL_ERR_STR(CL_INVALID_IMAGE_SIZE)
+        CL_ERR_STR(CL_INVALID_SAMPLER)
+        CL_ERR_STR(CL_INVALID_BINARY)
+        CL_ERR_STR(CL_INVALID_BUILD_OPTIONS)
+        CL_ERR_STR(CL_INVALID_PROGRAM)
+        CL_ERR_STR(CL_INVALID_PROGRAM_EXECUTABLE)
+        CL_ERR_STR(CL_INVALID_KERNEL_NAME)
+        CL_ERR_STR(CL_INVALID_KERNEL_DEFINITION)
+        CL_ERR_STR(CL_INVALID_KERNEL)
+        CL_ERR_STR(CL_INVALID_ARG_INDEX)
+        CL_ERR_STR(CL_INVALID_ARG_VALUE)
+        CL_ERR_STR(CL_INVALID_ARG_SIZE)
+        CL_ERR_STR(CL_INVALID_KERNEL_ARGS)
+        CL_ERR_STR(CL_INVALID_WORK_DIMENSION)
+        CL_ERR_STR(CL_INVALID_WORK_GROUP_SIZE)
+        CL_ERR_STR(CL_INVALID_WORK_ITEM_SIZE)
+        CL_ERR_STR(CL_INVALID_GLOBAL_OFFSET)
+        CL_ERR_STR(CL_INVALID_EVENT_WAIT_LIST)
+        CL_ERR_STR(CL_INVALID_EVENT)
+        CL_ERR_STR(CL_INVALID_OPERATION)
+        CL_ERR_STR(CL_INVALID_GL_OBJECT)
+        CL_ERR_STR(CL_INVALID_BUFFER_SIZE)
+        CL_ERR_STR(CL_INVALID_MIP_LEVEL)
+        CL_ERR_STR(CL_INVALID_GLOBAL_WORK_SIZE)
+        CL_ERR_STR(CL_INVALID_PROPERTY)
+        CL_ERR_STR(CL_INVALID_IMAGE_DESCRIPTOR)
+        CL_ERR_STR(CL_INVALID_COMPILER_OPTIONS)
+        CL_ERR_STR(CL_INVALID_LINKER_OPTIONS)
+        CL_ERR_STR(CL_INVALID_DEVICE_PARTITION_COUNT)
+        CL_ERR_STR(CL_INVALID_PIPE_SIZE)
+        CL_ERR_STR(CL_INVALID_DEVICE_QUEUE)
+        CL_ERR_STR(CL_INVALID_SPEC_ID)
+        CL_ERR_STR(CL_MAX_SIZE_RESTRICTION_EXCEEDED)
+        default:
+            return "Unknown OpenCL Error";
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 CLObject* init_driver() {
     CLObject* ocl = (CLObject*)malloc(sizeof(CLObject));
@@ -132,7 +204,7 @@ CLObject* init_driver() {
 
 //===============================================================================================================================================================  
 // START of assignment code section 
-    [YOUR CODE HERE]
+//    [YOUR CODE HERE]
 
 // END of assignment code section 
 //===============================================================================================================================================================  
@@ -163,7 +235,7 @@ int shutdown_driver(CLObject* ocl) {
      }
 //===============================================================================================================================================================  
 // START of assignment code section      
-    [YOUR CODE HERE]    
+//    [YOUR CODE HERE]
 // END of assignment code section 
 //===============================================================================================================================================================  
      
@@ -173,7 +245,7 @@ int shutdown_driver(CLObject* ocl) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int* input_buffer_2, int* output_buffer) {
+int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int* input_buffer_2, int w1, int w2, int* output_buffer) {
     long long unsigned int tid = ocl->thread_num;
 #if VERBOSE_MT>2    
      printf("run_driver thread: %llu\n",tid);
@@ -205,37 +277,139 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
     // You must also check the return value of every API call and handle any errors 
 
     // Create the buffer objects to link the input and output arrays in device memory to the buffers in host memory
-    
-    [YOUR CODE HERE]
-  
+
+    printf("%lu\n", local);
+    printf("%lu\n", global);
+    cl_mem_flags in_flags = CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY;
+    cl_mem_flags out_flags = CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY;
+
+    input1 = clCreateBuffer(ocl->context, in_flags, buffer_size, NULL, &err);
+    if (input1 == NULL) {
+        fprintf(stderr, "Error: Failed to allocate buffer! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    input2 = clCreateBuffer(ocl->context, in_flags, buffer_size, NULL, &err);
+    if (input2 == NULL) {
+        fprintf(stderr, "Error: Failed to allocate buffer! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    status_buf = clCreateBuffer(ocl->context, out_flags, sizeof(status[0]), NULL, &err);
+    if (status_buf == NULL) {
+        fprintf(stderr, "Error: Failed to allocate buffer! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    output = clCreateBuffer(ocl->context, out_flags, buffer_size, NULL, &err);
+    if (output == NULL) {
+        fprintf(stderr, "Error: Failed to allocate buffer! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
     // Write the data in input arrays into the device memory 
- 
-    [YOUR CODE HERE]
-  
+
+    err = clEnqueueWriteBuffer(ocl->command_queue, input1, CL_TRUE, 0, buffer_size, input_buffer_1, 0, NULL, NULL);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to copy data to buffer! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+    err = clEnqueueWriteBuffer(ocl->command_queue, input2, CL_TRUE, 0, buffer_size, input_buffer_2, 0, NULL, NULL);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to copy data to buffer! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+
     // Set the arguments to our compute kernel
-    
-    [YOUR CODE HERE]
-  
+
+    err = clSetKernelArg(ocl->kernel, 0, sizeof(&input1), &input1);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg0! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 1, sizeof(&input2), &input2);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg1! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 2, sizeof(&output), &output);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg2! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 3, sizeof(&status_buf), &status_buf);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg3! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
     // Execute the kernel, i.e. tell the device to process the data using the given global and local ranges
- 
-    [YOUR CODE HERE]
-  
+
+    cl_event kernel_event;
+    err = clEnqueueNDRangeKernel(ocl->command_queue, ocl->kernel, (cl_uint)1, NULL, &global, &local, 0, NULL, &kernel_event);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to enqueue the kernel! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
     // Wait for the command commands to get serviced before reading back results. This is the device sending an interrupt to the host    
-    
-    [YOUR CODE HERE]
+
+
 
     // Check the status
 
-    [YOUR CODE HERE]
-  
+    cl_event status_buf_read;
+    err = clEnqueueReadBuffer(ocl->command_queue, status_buf, CL_FALSE, 0, buffer_size, status, 1, &kernel_event, &status_buf_read);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to enqueue status read! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clWaitForEvents(1, &status_buf_read);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to wait for events! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
     // When the status is 0, read back the results from the device to verify the output
-   
-    [YOUR CODE HERE]
-  
+
+    if (status[0] != 0) {
+        fprintf(stderr, "You done goofed!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    err = clEnqueueReadBuffer(ocl->command_queue, output, CL_TRUE, 0, buffer_size, output_buffer, 0, NULL, NULL);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to read output! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
     // Shutdown and cleanup
-    
-    [YOUR CODE HERE]
-  
+
+    err = clReleaseMemObject(input1);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to release buffer! %s\n", clErrorString(err));
+    }
+
+    err = clReleaseMemObject(input2);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to release buffer! %s\n", clErrorString(err));
+    }
+
+    err = clReleaseMemObject(output);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to release buffer! %s\n", clErrorString(err));
+    }
+
+    err = clReleaseMemObject(status_buf);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to release buffer! %s\n", clErrorString(err));
+    }
+
 // END of assignment code section 
 //===============================================================================================================================================================  
     return *status;
