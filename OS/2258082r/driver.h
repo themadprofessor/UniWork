@@ -19,7 +19,7 @@ typedef struct ocl_objects {
 } CLObject;
 // the driver contains a function with following signature:
 CLObject* init_driver();
-int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1,   int* input_buffer_2,  int* output_buffer);
+int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1,   int* input_buffer_2,  int w1,  int w2,  int* output_buffer);
 int shutdown_driver(CLObject*);
 int driver(unsigned int buffer_size,  int* input_buffer_1,   int* input_buffer_2,  int* output_buffer);
 
