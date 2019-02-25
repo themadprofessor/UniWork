@@ -19,7 +19,7 @@
 struct thread_info {    /* Used as argument to thread_start() */
     pthread_t thread_id;        /* ID returned by pthread_create() */
     long long unsigned int thread_num;       /* Application-defined thread # */
-    CLObject* ocl;
+        CLObject* ocl;
 };
 
 /* Thread start function: display address near top of our stack,
@@ -45,7 +45,7 @@ void* thread_start(void *vtinfo) {
     // Create the reference
     int* mCref=(int*)malloc(sizeof(int)*mSize);
     for (unsigned int i = 0; i<mSize; i++) {
-        mCref[i]=w1*mA[i]*mA[i]+w2*mB[i]*mB[i];
+            mCref[i]=w1*mA[i]*mA[i]+w2*mB[i]*mB[i];
     }
 
     int* mC=(int*)malloc(sizeof(int)*mSize);
@@ -56,7 +56,7 @@ void* thread_start(void *vtinfo) {
     unsigned int correct=0;               // number of correct results returned
     for (unsigned int i = 0; i < mSize; i++){
         //std::cerr << mC[i] << " : " << mCref[i] << std::endl;
-        int reldiff = mC[i] - mCref[i];
+    	int reldiff = mC[i] - mCref[i];
         if(reldiff==0)
             correct++;
     }
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         /* The pthread_create() call stores the thread ID into
            corresponding element of tinfo[] */
         st = pthread_create(&tinfo[tnum].thread_id, NULL,
-                            &thread_start, &tinfo[tnum]);
+                &thread_start, &tinfo[tnum]);
         if (st != 0)
             handle_error_en(st, "pthread_create");
     }

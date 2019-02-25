@@ -258,7 +258,7 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
      size_t global;                      // global domain size for our calculation
      size_t local;                       // local domain size for our calculation
 
-     cl_mem input1, input2;                       // device memory used for the input array
+     cl_mem input1, input2;          // device memory used for the input array
      cl_mem output, status_buf;                      // device memory used for the output array
 
      // Get the maximum work group size for executing the kernel on the device
@@ -278,32 +278,30 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
 
     // Create the buffer objects to link the input and output arrays in device memory to the buffers in host memory
 
-    printf("%lu\n", local);
-    printf("%lu\n", global);
     cl_mem_flags in_flags = CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY;
     cl_mem_flags out_flags = CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY;
 
     input1 = clCreateBuffer(ocl->context, in_flags, buffer_size, NULL, &err);
     if (input1 == NULL) {
-        fprintf(stderr, "Error: Failed to allocate buffer! %s\n", clErrorString(err));
+        fprintf(stderr, "Error: Failed to allocate input1! %s\n", clErrorString(err));
         exit(EXIT_FAILURE);
     }
 
     input2 = clCreateBuffer(ocl->context, in_flags, buffer_size, NULL, &err);
     if (input2 == NULL) {
-        fprintf(stderr, "Error: Failed to allocate buffer! %s\n", clErrorString(err));
+        fprintf(stderr, "Error: Failed to allocate input2! %s\n", clErrorString(err));
         exit(EXIT_FAILURE);
     }
 
     status_buf = clCreateBuffer(ocl->context, out_flags, sizeof(status[0]), NULL, &err);
     if (status_buf == NULL) {
-        fprintf(stderr, "Error: Failed to allocate buffer! %s\n", clErrorString(err));
+        fprintf(stderr, "Error: Failed to allocate status_buf! %s\n", clErrorString(err));
         exit(EXIT_FAILURE);
     }
 
     output = clCreateBuffer(ocl->context, out_flags, buffer_size, NULL, &err);
     if (output == NULL) {
-        fprintf(stderr, "Error: Failed to allocate buffer! %s\n", clErrorString(err));
+        fprintf(stderr, "Error: Failed to allocate output! %s\n", clErrorString(err));
         exit(EXIT_FAILURE);
     }
 
@@ -311,15 +309,15 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
 
     err = clEnqueueWriteBuffer(ocl->command_queue, input1, CL_TRUE, 0, buffer_size, input_buffer_1, 0, NULL, NULL);
     if (err != CL_SUCCESS) {
-        fprintf(stderr, "Error: Failed to copy data to buffer! %s\n", clErrorString(err));
-        exit(EXIT_FAILURE);
-    }
-    err = clEnqueueWriteBuffer(ocl->command_queue, input2, CL_TRUE, 0, buffer_size, input_buffer_2, 0, NULL, NULL);
-    if (err != CL_SUCCESS) {
-        fprintf(stderr, "Error: Failed to copy data to buffer! %s\n", clErrorString(err));
+        fprintf(stderr, "Error: Failed to copy data to input1! %s\n", clErrorString(err));
         exit(EXIT_FAILURE);
     }
 
+    err = clEnqueueWriteBuffer(ocl->command_queue, input2, CL_TRUE, 0, buffer_size, input_buffer_2, 0, NULL, NULL);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to copy data to input2! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
 
     // Set the arguments to our compute kernel
 
@@ -347,10 +345,32 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
         exit(EXIT_FAILURE);
     }
 
+    err = clSetKernelArg(ocl->kernel, 4, sizeof(w1), &w1);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg4! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 5, sizeof(w2), &w2);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg5! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 6, sizeof(buffer_size), &buffer_size);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg5! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
     // Execute the kernel, i.e. tell the device to process the data using the given global and local ranges
 
+#if VERBOSE_MT>0
+    printf("local: %lu\n", local);
+    printf("global: %lu\n", global);
+#endif
     cl_event kernel_event;
-    err = clEnqueueNDRangeKernel(ocl->command_queue, ocl->kernel, (cl_uint)1, NULL, &global, &local, 0, NULL, &kernel_event);
+    err = clEnqueueNDRangeKernel(ocl->command_queue, ocl->kernel, (cl_uint)1, NULL, &local, &global, 0, NULL, &kernel_event);
     if (err != CL_SUCCESS) {
         fprintf(stderr, "Error: Failed to enqueue the kernel! %s\n", clErrorString(err));
         exit(EXIT_FAILURE);
@@ -358,12 +378,12 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
 
     // Wait for the command commands to get serviced before reading back results. This is the device sending an interrupt to the host    
 
-
+    // Reading the status buffer waits for kernel_event to be complete before reading
 
     // Check the status
 
     cl_event status_buf_read;
-    err = clEnqueueReadBuffer(ocl->command_queue, status_buf, CL_FALSE, 0, buffer_size, status, 1, &kernel_event, &status_buf_read);
+    err = clEnqueueReadBuffer(ocl->command_queue, status_buf, CL_FALSE, 0, sizeof(status), status, 1, &kernel_event, &status_buf_read);
     if (err != CL_SUCCESS) {
         fprintf(stderr, "Error: Failed to enqueue status read! %s\n", clErrorString(err));
         exit(EXIT_FAILURE);
