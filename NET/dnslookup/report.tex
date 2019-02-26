@@ -4,16 +4,16 @@
 %%
 
 % Preamble
-\documentclass[11pt,a4paper]{article}
+\documentclass[10pt,a4paper]{article}
 
 % Packages
 \usepackage{amsmath}
-\usepackage[paperwidth=5.5in, paperheight=8.5in]{geometry}
+\usepackage[top=1in, bottom=1.25in, left=1.25in, right=1.25in]{geometry}
 
 % Document
 \begin{document}
 
-    \title{Network Systems (H) Laboratory Exercise 3 Understanding the Topology of the Internet}
+    \title{Network Systems (H) Laboratory Exercise 3\\Understanding the Topology of the Internet}
     \author{Stuart Reilly - 2258082R}
     \date{\today}
     \maketitle
@@ -25,5 +25,42 @@
     \section{IPv4 and IPv6}\label{sec:ipv4-and-ipv6}
 
     \section{Traceroute}\label{sec:traceroute}
+    Traceroute is a networking tool for find the path between two devices on the Internet.
+    This done by making use of the Internet Control Message Protocol, ICMP, and another protocol, often either TCP or UDP .
+    A packet is sent with a incrementing time-to-live, TTL, value to the destination machine, then traceroute listens
+    for a response.
+    If the response is a time exceeded ICMP packet, the address of the sender is the next hop, so the address is printed
+    and the TTL is incremented.
+    If the response is not a time exceeded ICMP packet, the address of the sender is the destination device, so
+    traceroute terminates.
+    TTL is stored as an 8-bit field in the IP header of the packet, therefore traceroute has a an upper limit of 225
+    hops.
+    Both IPv4 and IPv6 use and 8-bit field, the difference is the location in the header.
+    9th octet of 20 and 8th octet of 40 for IPv4 and IPv6 respectively.
+
+    First, traceroute sends a packet to destination address with a TTL of 1.
+    This packet will always fail to reach the destination unless the destination machine is directly connected to the
+    source machine.
+    The first device to recieve the packet (likely the router on the source machine's network) will decrement the TTL of
+    the packet, which will be come 0, causing the router to send an ICMP packet back to the source machine, informing it
+    that the TTL of the packet was exceeded.
+    Traceroute will reattempt to send the packet a number of times, depending on the command line arguments given, before
+    increasing the TTL of the packet.
+    Then traceroute sends a packet to the destination device with a TTL of 2, therefore the first device will decrement
+    the packet's TTL and send it on to the next device.
+    The TTL of the packet sent is incremented until either the maximum number of hops is reached, or the returned ICMP
+    packet is no long a time exceed response, at which time traceroute has found the destination machine and
+    will terminate.
+    Each time the TTL is incremented, the address of the device which sends the ICMP time exceeded packet is the address
+    of the device at the current hop, and therefore if printed by traceroute.
+
+    Traceroute can use any protocol to send packets, since TTL is handled by the IP header.
+    For example on Unix-like systems, traceroute use UDP packets by default, but supports UDP, TCP, ICMP (using ICMP
+    echo), UDP-Lite, DCCP and raw (doesn't send protocol specific headers, just IP headers).
+    Windows tracert send ICMP Echo Requests which are also used by the ping command on most systems.
+    By supporting multiple protocols, traceroute can target machines with more restrictive firewall configurations.
+    For example, if a device's firewall does not allow UDP packets to be sent, another protocol can be used which is
+    allowed.
+    Traceroute does not change protocol automatically, it is up to the caller to determine a suitable protocol.
 
 \end{document}
