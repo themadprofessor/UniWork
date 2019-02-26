@@ -75,8 +75,8 @@ const char* clErrorString(int err) {
         CL_ERR_STR(CL_INVALID_DEVICE_PARTITION_COUNT)
         CL_ERR_STR(CL_INVALID_PIPE_SIZE)
         CL_ERR_STR(CL_INVALID_DEVICE_QUEUE)
-        CL_ERR_STR(CL_INVALID_SPEC_ID)
-        CL_ERR_STR(CL_MAX_SIZE_RESTRICTION_EXCEEDED)
+        //CL_ERR_STR(CL_INVALID_SPEC_ID)
+        //CL_ERR_STR(CL_MAX_SIZE_RESTRICTION_EXCEEDED)
         default:
             return "Unknown OpenCL Error";
     }
