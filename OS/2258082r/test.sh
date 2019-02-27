@@ -11,7 +11,7 @@ for thread in ${threads[@]}; do
         echo -n "Testing $thread threads and $size size: "
         output=`./testbench`
         if [[ $(echo ${output} | sed 's/SUCCESS!/SUCCESS!\n/g' | grep -c SUCCESS -) != ${thread} ]]; then
-            echo ${output} | sed 's/SUCCESS!/SUCCESS!\n/g' > "$thread-$size.out"
+            echo ${output} | sed 's/^(SUCCESS|FAILURE)! /!\n/g' > "$thread-$size.out"
             echo "Failed, dumping output to $thread-$size.out"
         else
             echo "Success"
