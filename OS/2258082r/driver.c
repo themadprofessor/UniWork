@@ -337,25 +337,25 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
 
         // Set the arguments to our compute kernel
 
-        err = clSetKernelArg(ocl->kernel, 0, sizeof(&input1), &input1);
+        err = clSetKernelArg(ocl->kernel, 0, sizeof(input1), &input1);
         if (err != CL_SUCCESS) {
             fprintf(stderr, "Error: Failed to set kernel arg0! %s\n", clErrorString(err));
             exit(EXIT_FAILURE);
         }
 
-        err = clSetKernelArg(ocl->kernel, 1, sizeof(&input2), &input2);
+        err = clSetKernelArg(ocl->kernel, 1, sizeof(input2), &input2);
         if (err != CL_SUCCESS) {
             fprintf(stderr, "Error: Failed to set kernel arg1! %s\n", clErrorString(err));
             exit(EXIT_FAILURE);
         }
 
-        err = clSetKernelArg(ocl->kernel, 2, sizeof(&output), &output);
+        err = clSetKernelArg(ocl->kernel, 2, sizeof(output), &output);
         if (err != CL_SUCCESS) {
             fprintf(stderr, "Error: Failed to set kernel arg2! %s\n", clErrorString(err));
             exit(EXIT_FAILURE);
         }
 
-        err = clSetKernelArg(ocl->kernel, 3, sizeof(&status_buf), &status_buf);
+        err = clSetKernelArg(ocl->kernel, 3, sizeof(status_buf), &status_buf);
         if (err != CL_SUCCESS) {
             fprintf(stderr, "Error: Failed to set kernel arg3! %s\n", clErrorString(err));
             exit(EXIT_FAILURE);
