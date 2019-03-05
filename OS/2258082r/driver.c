@@ -205,7 +205,6 @@ CLObject* init_driver() {
 
 //===============================================================================================================================================================  
 // START of assignment code section 
-//    [YOUR CODE HERE]
     err = pthread_mutex_init(&ocl->device_lock, NULL);
     if (err != 0) {
         fprintf(stderr, "Error: Failed to init mutex: %s\n", strerror(err));
@@ -268,7 +267,6 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
 
     cl_mem input1, input2;          // device memory used for the input array
     cl_mem output, status_buf;                      // device memory used for the output array
-    err = pthread_mutex_lock(&ocl->device_lock);
     if (err != 0) {
         fprintf(stderr, "Error: Failed to lock mutex: %s\n", strerror(err));
         exit(EXIT_FAILURE);
@@ -288,6 +286,7 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
 
     // You must make sure the driver is thread-safe by using the appropriate POSIX mutex operations
     // You must also check the return value of every API call and handle any errors 
+    err = pthread_mutex_lock(&ocl->device_lock);
 
     // Create the buffer objects to link the input and output arrays in device memory to the buffers in host memory
 
@@ -320,65 +319,65 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
     }
 
     // Write the data in input arrays into the device memory
+    err = clEnqueueWriteBuffer(ocl->command_queue, input1, CL_TRUE, 0, sizeof(int) * buffer_size, input_buffer_1, 0,
+                               NULL, NULL);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to copy data to input1! %s\n", clErrorString(err));
+	exit(EXIT_FAILURE);
+    }
+
+    err = clEnqueueWriteBuffer(ocl->command_queue, input2, CL_TRUE, 0, sizeof(int) * buffer_size, input_buffer_2, 0,
+                               NULL, NULL);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to copy data to input2! %s\n", clErrorString(err));
+	exit(EXIT_FAILURE);
+    }
+
+    // Set the arguments to our compute kernel
+
+    err = clSetKernelArg(ocl->kernel, 0, sizeof(input1), &input1);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg0! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 1, sizeof(input2), &input2);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg1! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 2, sizeof(output), &output);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg2! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 3, sizeof(status_buf), &status_buf);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg3! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 4, sizeof(w1), &w1);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg4! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 5, sizeof(w2), &w2);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg5! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
+    err = clSetKernelArg(ocl->kernel, 6, sizeof(buffer_size), &buffer_size);
+    if (err != CL_SUCCESS) {
+        fprintf(stderr, "Error: Failed to set kernel arg6! %s\n", clErrorString(err));
+        exit(EXIT_FAILURE);
+    }
+
     do {
-        err = clEnqueueWriteBuffer(ocl->command_queue, input1, CL_TRUE, 0, sizeof(int) * buffer_size, input_buffer_1, 0,
-                                   NULL, NULL);
-        if (err != CL_SUCCESS) {
-            fprintf(stderr, "Error: Failed to copy data to input1! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
-        }
-
-        err = clEnqueueWriteBuffer(ocl->command_queue, input2, CL_TRUE, 0, sizeof(int) * buffer_size, input_buffer_2, 0,
-                                   NULL, NULL);
-        if (err != CL_SUCCESS) {
-            fprintf(stderr, "Error: Failed to copy data to input2! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
-        }
-
-        // Set the arguments to our compute kernel
-
-        err = clSetKernelArg(ocl->kernel, 0, sizeof(&input1), &input1);
-        if (err != CL_SUCCESS) {
-            fprintf(stderr, "Error: Failed to set kernel arg0! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
-        }
-
-        err = clSetKernelArg(ocl->kernel, 1, sizeof(&input2), &input2);
-        if (err != CL_SUCCESS) {
-            fprintf(stderr, "Error: Failed to set kernel arg1! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
-        }
-
-        err = clSetKernelArg(ocl->kernel, 2, sizeof(&output), &output);
-        if (err != CL_SUCCESS) {
-            fprintf(stderr, "Error: Failed to set kernel arg2! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
-        }
-
-        err = clSetKernelArg(ocl->kernel, 3, sizeof(&status_buf), &status_buf);
-        if (err != CL_SUCCESS) {
-            fprintf(stderr, "Error: Failed to set kernel arg3! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
-        }
-
-        err = clSetKernelArg(ocl->kernel, 4, sizeof(w1), &w1);
-        if (err != CL_SUCCESS) {
-            fprintf(stderr, "Error: Failed to set kernel arg4! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
-        }
-
-        err = clSetKernelArg(ocl->kernel, 5, sizeof(w2), &w2);
-        if (err != CL_SUCCESS) {
-            fprintf(stderr, "Error: Failed to set kernel arg5! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
-        }
-
-        err = clSetKernelArg(ocl->kernel, 6, sizeof(buffer_size), &buffer_size);
-        if (err != CL_SUCCESS) {
-            fprintf(stderr, "Error: Failed to set kernel arg6! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
-        }
-
         // Execute the kernel, i.e. tell the device to process the data using the given global and local ranges
 
 #if VERBOSE_MT > 0
@@ -390,7 +389,7 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
                                      &kernel_event);
         if (err != CL_SUCCESS) {
             fprintf(stderr, "Error: Failed to enqueue the kernel! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
+	    continue;
         }
 
         // Wait for the command commands to get serviced before reading back results. This is the device sending an interrupt to the host
@@ -403,7 +402,7 @@ int run_driver(CLObject* ocl,unsigned int buffer_size,  int* input_buffer_1, int
                                   NULL);
         if (err != CL_SUCCESS) {
             fprintf(stderr, "Error: Failed to enqueue status read! %s\n", clErrorString(err));
-            exit(EXIT_FAILURE);
+	    continue;
         }
 
         // When the status is 0, read back the results from the device to verify the output

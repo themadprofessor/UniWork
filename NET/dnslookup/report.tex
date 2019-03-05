@@ -19,10 +19,31 @@
     \maketitle
 
     \section{IP Addresses}\label{sec:ip-addresses}
+    Some of the domains have multiple IP addresses attached, such as google.com, mariadb.com and gov.cn.
+    Having multiple IP addresses means the website is hosted on multiple data centres, allowing the site to be accessed
+    by more devices at once.
+    A DNS will likely either shuffle the multiple IP addresses or use a Round-Robin technique when query for a domain
+    with multiple addresses.
+    Running dnslookup from multiple locations provides different IP addresses, as each location had a different DNS
+    server, and will be closer to different data centres.
+    Out of the total 20 domains, only 8 had IPv6 addresses.
+    This is likely because their is little incentive for a domain host to use IPv6 when IPv4 works and is more ubiquitous.
 
     \section{Router-level Topology Maps}\label{sec:router-level-topology-maps}
+    The longest path in the IPv4 graph is 19 hops and the longest path is 17 hops.
+    In the IPv6 graph, there all routes a disjoint and there is only one route to each address.
+    In contrast, the IPv4 graph contains cycles, which means their are multiple routes to some nodes.
+    This shows the routes are congested and the packets have to routed down alternative route.
+    Both graphs have a short linear route at the top, which represents the route from the university's internel network
+    into ja.net, which is a network for British universities.
+    It then branches depending on where the destination to find the optimal exit from ja.net.
+    For example, the destinations based outside of the UK, they are likely to routed through a London exchange.
+    Once the packet has reached the destination device's network, it travels down a linear path to the destination.
 
     \section{IPv4 and IPv6}\label{sec:ipv4-and-ipv6}
+    The two graphs have similar structures within them where a domain has both IPv6 and IPv4 addresses.
+    This is to be expected as they are likely to be representing the same routes, passing through ja.net before being
+    directed to specific destination device.
 
     \section{Traceroute}\label{sec:traceroute}
     Traceroute is a networking tool for find the path between two devices on the Internet.
