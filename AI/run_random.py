@@ -1,10 +1,7 @@
-import sys
 import numpy as np
-from uofgsocsai import LochLomondEnv, LEFT, RIGHT, UP, DOWN
 
-
-def print_headers():
-    print('episode,iteration,reward,done,info,action')
+from uofgsocsai import LochLomondEnv
+from utils import *
 
 
 def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
@@ -35,6 +32,4 @@ def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
 
 if __name__ == '__main__':
     problem_id = int(sys.argv[1])
-    with open('out_random_' + sys.argv[1] + '.txt', 'w+') as out:
-        sys.stdout = out
-        run(problem_id)
+    run_changed_stdout(run, 'random', sys.argv[1], problem_id=problem_id)
