@@ -2,8 +2,10 @@ import sys
 import numpy as np
 from uofgsocsai import LochLomondEnv, LEFT, RIGHT, UP, DOWN
 
+
 def print_headers():
     print('episode,iteration,reward,done,info,action')
+
 
 def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
     env = LochLomondEnv(problem_id=problem_id, is_stochastic=True, reward_hole=reward_hole)
