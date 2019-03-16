@@ -1,7 +1,7 @@
 import numpy as np
 
 from uofgsocsai import LochLomondEnv
-from utils import *
+from util import *
 
 
 def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):

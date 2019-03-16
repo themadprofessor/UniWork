@@ -80,7 +80,7 @@ class LochLomondEnv(discrete.DiscreteEnv):
             raise ValueError('reward_hole must be equal to 0 or smaller')
 
         # Fetch the base problem (without S and G)
-        map_name_base = "4x4-base"  # for the final submission in AI (H) this should be 8x8-base but you may want to start out with 4x4-base!
+        map_name_base = "8x8-base"  # for the final submission in AI (H) this should be 8x8-base but you may want to start out with 4x4-base!
         desc = MAPS_BASE[map_name_base]
         self.nrow, self.ncol = nrow, ncol = np.asarray(desc, dtype='c').shape
 
