@@ -15,6 +15,8 @@ def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
 
     np.random.seed(12)
 
+    results = []
+
     for episode in range(max_episodes):
         print('-' * 50)
         env.reset()
@@ -28,6 +30,7 @@ def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
             print(",".join([str(episode), str(iter), node.state]))
             if maze_problem.goal_test(node.state):
                 print('done')
+                results.append({'iters': iter, 'success': True})
                 break
             seen.add(node.state)
             for possible in node.expand(maze_problem):
@@ -37,6 +40,8 @@ def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
                     if func(possible) < frontier[possible]:
                         del frontier[possible]
                         frontier.append(possible)
+
+    return results
 
 
 if __name__ == '__main__':

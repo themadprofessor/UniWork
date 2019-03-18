@@ -9,6 +9,8 @@ def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
 
     np.random.seed(12)
 
+    results = []
+
     for episode in range(max_episodes):
         env.reset()
         print('-' * 50)
@@ -22,12 +24,16 @@ def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
             if done and reward == reward_hole:
                 env.render()
                 print("Hole Found in " + str(iteration) + " iterations")
+                results.append({'iters': iteration, 'success': False})
                 break
 
             if done and reward == 1.0:
                 env.render()
                 print("Frisbee acquired in " + str(iteration) + " iterations")
+                results.append({'iters': iteration, 'success': True})
                 break
+
+    return results
 
 
 if __name__ == '__main__':

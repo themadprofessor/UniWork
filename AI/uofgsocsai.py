@@ -12,7 +12,7 @@ UP = 3
 
 MAPS_BASE = {
     "4x4-base": [
-        "SFFF",
+        "FFFF",
         "FHFH",
         "FFFH",
         "HFFF"

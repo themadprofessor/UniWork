@@ -23,7 +23,7 @@ def learn(state, state2, reward, action, Q, gamma, lr_rate):
     Q[state, action] = Q[state, action] + lr_rate * (target - predict)
 
 
-def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
+def run(problem_id=0, max_episodes=2000, max_iters_per=500, reward_hole=-1.0):
     env = LochLomondEnv(problem_id=problem_id, is_stochastic=True, reward_hole=reward_hole)
 
     epsilon = 0.9
@@ -34,6 +34,8 @@ def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
     Q = np.zeros((env.observation_space.n, env.action_space.n))
 
     np.random.seed(12)
+
+    results = []
 
     for episode in range(max_episodes):
         state = env.reset()
@@ -47,10 +49,18 @@ def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
 
             learn(state, state2, reward, action, Q, gamma, lr_rate)
             state = state2
+            if done and reward == reward_hole:
+                print('Found a hole in ' + str(iter) + ' iterations')
+                results.append({'iters': iter, 'success': False})
+                break
             if done:
+                print('Found frisbee in ' + str(iter) + ' iterations')
+                results.append({'iters': iter, 'success': False})
                 break
 
         epsilon -= epsilon_reduce
+
+    return results
 
 
 if __name__ == '__main__':
