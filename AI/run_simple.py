@@ -7,7 +7,7 @@ from uofgsocsai import LochLomondEnv
 from util import run_changed_stdout
 
 
-def run(problem_id=0, max_episodes=200, max_iters_per=500, reward_hole=0.0):
+def run(problem_id=0, max_episodes=10000, max_iters_per=2000, reward_hole=0.0):
     env = LochLomondEnv(problem_id=problem_id, is_stochastic=False, reward_hole=reward_hole)
 
     statespace_locs, statespace_actions, statespace_init, statespace_goal = env2statespace(env)

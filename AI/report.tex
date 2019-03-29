@@ -1,0 +1,96 @@
+%%
+%% Author: stuart
+%% 18/03/19
+%%
+
+% Preamble
+\documentclass[11pt]{article}
+
+% Packages
+\usepackage{amsmath}
+\usepackage{tabulary}
+\usepackage[a4paper,includeheadfoot,margin=2.54cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+
+% Document
+\begin{document}
+    \title{Artificial Intelligence Assessed Coursework}
+    \date{\today}
+    \author{Stuart Reilly - 2258082R}
+    \maketitle
+
+    \begin{tabulary}{0.9\linewidth}{|L|L|L|L|}
+        \hline
+        Performance Measure                                     & Environment            & Actuators        & Sensors \\
+        \hline
+        Successfully reaching frisbee without falling in a hole & Frozen Lake with holes & Move across lake & Noticing if currently in a hole or at the frisbee \\
+        \hline
+    \end{tabulary}
+
+    The simple agent is implemented using the A* search algorithm, where each iteration of the agent is an iteration
+    over the frontier.
+    The reinforcement learning agent is implemented using Q-learning.
+    After each episode, the agent's epsilon value is reduced in order to reduce the amount of exploration the agent
+    carries out, and increasing the likelihood the agent will use the best path its found.
+
+    \begin{figure}[H]
+        \includegraphics[width=0.7\linewidth]{prob_0}
+    \end{figure}
+
+    \begin{figure}[H]
+        \includegraphics[width=0.7\linewidth]{prob_1}
+    \end{figure}
+
+    \begin{figure}[H]
+        \includegraphics[width=0.7\linewidth]{prob_2}
+    \end{figure}
+
+    \begin{figure}[H]
+        \includegraphics[width=0.7\linewidth]{prob_3}
+    \end{figure}
+
+    \begin{figure}[H]
+        \includegraphics[width=0.7\linewidth]{prob_4}
+    \end{figure}
+
+    \begin{figure}[H]
+        \includegraphics[width=0.7\linewidth]{prob_5}
+    \end{figure}
+
+    \begin{figure}[H]
+        \includegraphics[width=0.7\linewidth]{prob_6}
+    \end{figure}
+
+    \begin{figure}[H]
+        \includegraphics[width=0.7\linewidth]{prob_7}
+    \end{figure}
+
+    The following is a table to show the ratio of success to failure to reach the frisbee for each agent.
+    \begin{tabulary}{0.9\linewidth}{|L|L|L|L|}
+        \hline
+        Problem ID & Reinforcement Learning & Random & Simple \\
+        \hline
+        0 & 0.0002 & 0.0 & 1.0 \\
+        1 & 0.002 & 0.0003 & 1.0 \\
+        2 & 0.1985 & 0.0165 & 1.0 \\
+        3 & 0.1813 & 0.0139 & 1.0 \\
+        4 & 0.1784 & 0.0128 & 1.0 \\
+        5 & 0.2005 & 0.0113 & 1.0 \\
+        6 & 0.1955 & 0.011 & 1.0 \\
+        7 & 0.2169 & 0.018 & 1.0 \\
+        \hline
+    \end{tabulary}
+
+    Across all training environments, the simple agent has a constant number of iterations.
+    This is because the agent implements A* search, which will search in the same number of nodes in the same
+    environment.
+    The reinforcement learning agent has a similar structure to the number of iterations as the random agent, which is
+    caused by the random nature of the training of the reinforcement learning agent.
+
+    The simple agent always successfully finds the frisbee.
+    This is because the holes are nodes with no possible exits, so A* will never keep the holes in the path.
+    The reinforcement learning agent sometimes fails to reach the frisbee, is more likely to reach the frisbee than the
+    random agent, due to its learning.
+
+\end{document}

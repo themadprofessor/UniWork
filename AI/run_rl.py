@@ -23,13 +23,13 @@ def learn(state, state2, reward, action, Q, gamma, lr_rate):
     Q[state, action] = Q[state, action] + lr_rate * (target - predict)
 
 
-def run(problem_id=0, max_episodes=2000, max_iters_per=500, reward_hole=-1.0):
+def run(problem_id=0, max_episodes=10000, max_iters_per=2000, reward_hole=-1.0):
     env = LochLomondEnv(problem_id=problem_id, is_stochastic=True, reward_hole=reward_hole)
 
     epsilon = 0.9
     lr_rate = 0.81
     gamma = 0.96
-    epsilon_reduce = 1/(max_episodes)
+    epsilon_reduce = 1 / max_episodes
 
     Q = np.zeros((env.observation_space.n, env.action_space.n))
 
@@ -55,7 +55,7 @@ def run(problem_id=0, max_episodes=2000, max_iters_per=500, reward_hole=-1.0):
                 break
             if done:
                 print('Found frisbee in ' + str(iter) + ' iterations')
-                results.append({'iters': iter, 'success': False})
+                results.append({'iters': iter, 'success': True})
                 break
 
         epsilon -= epsilon_reduce
