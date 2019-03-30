@@ -15,20 +15,87 @@
 Release It! is a guide on how a programmer can design a system which is designed for production 
 from the outset of development, while providing case studies to show real-world examples of why
 this is important.
-The book is broken into four chapters; Create Stability, Design for Production, Deliver Your 
+The book is broken into four part; Create Stability, Design for Production, Deliver Your 
 System, Solve Systemic Problems.
-Each of these chapters are further broken down in multiple sections, starting with a case study,
-followed by multiple sections, focusing on the solutions to the issues found in the case study.
-Breaking each chapter into multiple sections in this structure allows the chapter to have a flow
+Each of these part are further broken down in multiple chapters, starting with a case study,
+followed by multiple chapters, focusing on the solutions to the issues found in the case study.
+Breaking each part into multiple chapters in this structure allows the chapter to have a flow
 from showing there is an issue and its implications, to possible solutions and how to apply the
 solutions to the reader's own systems.
-The chapters also provide an overarching flow of how to handle the failure of a system and 
+The parts also provide an overarching flow of how to handle the failure of a system and 
 minimising the impact of the failure, reducing the likelihood of a failure in a system,
 deploying a system in a manner to reduce the likelihood of failure, and how to handle a failure
 in production.
 By the end of the book, the reader should have an understanding of why it is important and how to 
 design a system for production early in the system's development, and have a systematic method to 
 resolve a failure in production.
+
+\section{Analysis}
+Overall, Release It! is a balanced book.
+Although the majority of the book is focused on the design of a system, rather the deployment of 
+the system, this is justified by the fact the system must be designed for production for the 
+deployment techniques to be effective.
+The security chapter, while applicable to the topics the book works with, is somewhat out of place
+compared to the other chapters.
+It focuses on how to protect a system from data breaches, and protecting sensitive data if a data
+breach was to occur.
+This does align itself with the overall topic of designing systems for production, however the 
+rest of the book focuses on design patterns to avoid catastrophic failure, handling small failures
+gracefully and minimising downtime.
+Switching to a chapter focused on the implementation details of a secure system is not match the 
+more abstract focus of the book.
+Furthermore, the security of a system is a broad topic which cannot be discussed in enough depth to
+be relavent in a single chapter, and while the security concepts may not become out of date soon 
+after publishing, the specific implementation details and decisions will.
+With that said, the implementation details in the chapter are fairly modern.
+For example, it states ``Stop using SHA-1. Just Stop. Its not longer adequate.'' 
+\cite[p.~226]{release}.
+SHA-1 had its first public collision on 23 February 2017, and has only been deemed inadequate since
+then.
+The design for deployment chapter is one of particular value as it explains why deployment is not
+only for an operations team, but also the development team.
+Dispelling the belief of planned downtime being an acceptable part of deployment and alternative
+methods of deployment to avoid it, is the main aim of the chapter, which it succeeds in discussing
+effectively.
+The key concept from the chapter is planned downtime is as bad as unexpected downtime for an end
+user, as such should be avoided.
+In order to achieve this, the design of the system must take into account automated and continuous
+deployment.
+The chapter effectively breaks down the phases of deployment and how to account for them in the
+design for a system and methods for rolling out a new release of a system seamlessly for the end
+user.
+Also, the chapter is expressed in an unopinionated manner, allowing the reader to decide which
+technique is better for a particular system.
+Both convergent and immutable infrastructure are discussed in the chapter, without the author
+defining one as better than the other, instead convergent is better suited for smaller systems,
+and immutable is better for larger systems.
+Furthermore, the chapter discusses topics which have a large range of available tools, but the 
+author minimises discussing particular tools.
+By not discussing specific tools, the author is able to focus on the concepts the tools aim to 
+solve, allowing the author to take the concepts on board and find tools which suit the needs of
+their system, rather than the needs of the author's system.
+Each art of the book begins with a case study of a system which didn't take into account the
+topic of the chapter.
+The case study shows how the system failed, exposing the problem discussed in the part, and how
+the author diagnosed and solved the issue.
+By starting with a case study, the reader is shown the problem exists in the real world, not an
+abstract concept, and the difficulty the author had while diagnosing and solving the problem.
+The remainer of the part of the book is dedicated to discussing possible methods of preventing the
+problem in the design phase and often how to handle the problem, reducing the complexity of 
+diagnosing the problem, at runtime.
+
+\section{Summary}
+Release It! is a book focused for experts, but should be read by any developer.
+While the book assumes some technical understanding of systems, the topics in the book are vital
+for all developers to understand in order to provide a better experience for both the end user and
+themselves.
+This is because, the system designed by a developer who took on board the topics in the book will
+has a vastly more effective deployment than a system designed by a developer who hasn't taken the 
+topics on board, reducing the downtime for the end user and frequency of both failed deployments
+and catastrophic failures.
+The un-opinionated nature of the book avoids guiding the reader into specific tools, but still 
+provides enough detail to give the reader a starting point for evaluating different tools.
+Overall, Release It! is a book which is a vital part of any developer's toolkit.
 
 \bibliographystyle{plain}
 \bibliography{bookreview}
