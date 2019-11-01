@@ -12,6 +12,7 @@
 // The comments provide (executable) Haskell specifications of the functions
 
 #include <stdio.h>
+#include <time.h>
 
 // hcf x 0 = x
 // hcf x y = hcf y (rem x y)
@@ -44,6 +45,7 @@ long euler(long n)
     long length, i;
 
     length = 0;
+#pragma omp parallel for reduction(+:length) default(none) private(i) shared(n)
     for (i = 1; i < n; i++)
         if (relprime(n, i))
             length++;
@@ -58,8 +60,9 @@ long sumTotient(long lower, long upper)
     long sum, i;
 
     sum = 0;
+#pragma omp parallel for reduction(+:sum) default(none) private(i) shared(lower, upper)
     for (i = lower; i <= upper; i++)
-        sum = sum + euler(i);
+        sum += euler(i);
     return sum;
 }
 
@@ -67,6 +70,7 @@ long sumTotient(long lower, long upper)
 int main(int argc, char ** argv)
 {
     long lower, upper;
+    clock_t start, end;
 
     if (argc != 3) {
         printf("not 2 arguments\n");
@@ -74,7 +78,10 @@ int main(int argc, char ** argv)
     }
     sscanf(argv[1], "%ld", &lower);
     sscanf(argv[2], "%ld", &upper);
+    start = clock();
     printf("C: Sum of Totients  between [%ld..%ld] is %ld\n",
            lower, upper, sumTotient(lower, upper));
+    end = clock();
+    printf("Took %ld seconds\n", (end - start) / CLOCKS_PER_SEC);
     return 0;
 }
