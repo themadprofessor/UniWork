@@ -60,7 +60,7 @@ long sumTotient(long lower, long upper)
     long sum, i;
 
     sum = 0;
-#pragma omp parallel for simd default(none) schedule(guided) shared(upper, lower) reduction(+:sum)
+#pragma omp target teams distribute parallel for default(none) shared(lower, upper) reduction(+:sum) schedule(static,1)
     for (i = lower; i <= upper; i++)
         sum += euler(i);
     return sum;
