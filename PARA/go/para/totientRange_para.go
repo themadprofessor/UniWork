@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -27,26 +26,22 @@ import (
 // hcf x 0 = x
 // hcf x y = hcf y (rem x y)
 
-func hcf(x, y int64, channel chan int64) {
+func hcf(x, y int64) int64 {
 	var t int64
 	for y != 0 {
 		t = x % y
 		x = y
 		y = t
 	}
-	channel <- x
-	close(channel)
+	return x
 }
 
 // relprime determines whether two numbers x and y are relatively prime
 //
 // relprime x y = hcf x y == 1
 
-func relprime(x, y int64, channel chan bool, group sync.WaitGroup) {
-	hcf_chan := make(chan int64)
-	go hcf(x, y, hcf_chan)
-	channel <- (<- hcf_chan) == 1
-	group.Done()
+func relprime(x, y int64) bool {
+	return hcf(x, y) == 1
 }
 
 // euler(n) computes the Euler totient function, i.e. counts the number of
@@ -54,30 +49,17 @@ func relprime(x, y int64, channel chan bool, group sync.WaitGroup) {
 //
 // euler n = length (filter (relprime n) [1 .. n-1])
 
-func euler(n int64, channel chan int64, group sync.WaitGroup) {
+func euler(n int64, channel chan int64) {
 	var length, i int64
-	var wait sync.WaitGroup
-	relChan := make(chan bool, n-1)
-	wait.Add(int(n - 1))
 
 	length = 0
 	for i = 1; i < n; i++ {
-		go relprime(n, i, relChan, wait)
-	}
-
-	go func() {
-		wait.Wait()
-		close(relChan)
-	}()
-
-	for result := range relChan {
-		if result {
+		if relprime(n, i) {
 			length++
 		}
 	}
 
 	channel <- length
-	group.Done()
 }
 
 // sumTotient lower upper sums the Euler totient values for all numbers
@@ -87,22 +69,20 @@ func euler(n int64, channel chan int64, group sync.WaitGroup) {
 
 func sumTotient(lower, upper int64) int64 {
 	var sum, i int64
-	var wait sync.WaitGroup
-	channel := make(chan int64, upper-lower-1)
-	wait.Add(int(upper - lower - 1))
+	channels := make([]chan int64, upper-lower+1)
+
+	for i := range channels {
+		channels[i] = make(chan int64)
+	}
 
 	sum = 0
 	for i = lower; i <= upper; i++ {
-		go euler(i, channel, wait)
+		go euler(i, channels[i-lower])
 	}
 
-	go func() {
-		wait.Wait()
-		close(channel)
-	}()
-
-	for val := range channel {
-		sum += val
+	for _, val := range channels {
+		sum += <-val
+		close(val)
 	}
 
 	return sum
