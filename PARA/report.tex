@@ -1,4 +1,8 @@
 \documentclass[11pt,a4paper,titlepage]{article}
+\usepackage{graphicx}
+\usepackage{tabulary}
+\usepackage[english]{babel}
+\usepackage{placeins}
 
 \begin{document}
 \title{Distributed and Parallel Technologies - Assessed Exercise Part 1}
@@ -8,22 +12,81 @@
 
 \section{Comparative Sequential Performance}
 
-\begin{table}[]
-\begin{tabular}{|l|l|l|}
-\hline
-Data Set & Go Runtimes & C Runtimes \\ \hline
-DS1 & 15.947 & 15.174s \\ \hline
-DS2 & 67.930 & 65.147s \\ \hline
-\end{tabular}
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|l|l|l|}
+		\hline
+		Data Set & Go Runtimes & C Runtimes \\ \hline
+		DS1 & 15.95 & 15.17s \\ \hline
+		DS2 & 67.93 & 65.15s \\ \hline
+		DS3 & 288.97 & 278.39 \\ \hline
+	\end{tabular}
+	\caption{Comparing C and Go Sequential Runtimes}
 \end{table}
 
 \section{Comparative Parallel Performance Measurements}
 \subsection{Runtimes}
 
+\includegraphics[width=\textwidth]{ds1}
+\includegraphics[width=\textwidth]{ds2}
+\includegraphics[width=\textwidth]{ds3}
+
 \subsection{Speedups}
+
+\includegraphics[width=\textwidth]{ds1-speed}
+\includegraphics[width=\textwidth]{ds2-speed}
+\includegraphics[width=\textwidth]{ds3-speed}
 
 \subsection{Summary Data}
 
+\begin{table}[!h]
+	\centering
+	\begin{tabulary}{\textwidth}{|L|L|L|L|L|}
+		\hline
+		Language & Sequential Runtime (s) & Best Parallel Runtime (s) & Best Speedup & No. Threads \\ \hline
+		Go & 15.17 & 0.72 & 22.15 & 32 \\ \hline
+		C + OpenMP & 15.95 & 0.64 & 23.70 & 32 \\ \hline
+	\end{tabulary}
+	\caption{Comparing C+OpenMP and Go Parallel Runtimes and Speedups for DS1}
+\end{table}
+
+\begin{table}[!h]
+	\centering
+	\begin{tabulary}{\textwidth}{|L|L|L|L|L|}
+		\hline
+		Language & Sequential Runtime (s) & Best Parallel Runtime (s) & Best Speedup & No. Threads \\ \hline
+		Go & 67.93 & 3.10 & 21.91 & 48 \\ \hline
+		C + OpenMP & 65.15 & 2.64 & 23.78 & 32 \\ \hline
+	\end{tabulary}
+	\caption{Comparing C+OpenMP and Go Parallel Runtimes and Speedups for DS2}
+\end{table}
+
+\begin{table}[!h]
+	\centering
+	\begin{tabulary}{\textwidth}{|L|L|L|L|L|}
+		\hline
+		Language & Sequential Runtime (s) & Best Parallel Runtime (s) & Best Speedup & No. Threads \\ \hline
+		Go & 288.97 & 13.00 & 22.23 & 48 \\ \hline
+		C + OpenMP & 278.39 & 11.52 & 24.17 & 32 \\ \hline
+	\end{tabulary}
+	\caption{Comparing C+OpenMP and Go Parallel Runtimes and Speedups for DS3}
+\end{table}
+
+\FloatBarrier
 \subsection{Discussion}
+C+OpenMP has a lower runtime than Go with every thread limit tested, and larger absolute speedup.
+This is likely because C is a lower level language without a large runtime or garbage collector, and OpenMP can make better use of the available resources, when compared to Go.
+With that said, the difference between C+OpenMP's and Go's absolute speedup is not as large as initially anticipated.
+Go's implementation of coroutines (goroutines) and channels have been well designed and can make efficient use of the available resources.
+The garbage collector in Go reserves CPU cores for its concurrent mark-and-sweep phases, which will negatively impact the program's multithreaded performance, as less CPU cores will be available for the program's goroutines.
+
+\section{Programming Model Comparison}
+C+OpenMP is a higher level model for concurrent programming than Go's goroutinues.
+This has advantages, such as better guarantees for resource utilisation, lower barrier to entry and lower cognitive load in order to use.
+Furthermore, C+OpenMP allows sequential code to be parallelised with minimal changes to the existing code, where as Go requires all methods to be modified to pass return variables into a channel.
+
+During testing, Go spent more time in kernel space than C+OpenMP.
+This is likely because, C+OpenMP creates its thread pool once at the first parallel pragma, whereas Go builds its thread pool as more goroutines are created.
+Also, the Go garbage collector could be making syscalls in order to free unused variables during either its 'stop the world' phase or 'sweep' phase.
 
 \end{document}
