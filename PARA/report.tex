@@ -2,7 +2,8 @@
 \usepackage{graphicx}
 \usepackage{tabulary}
 \usepackage[english]{babel}
-\usepackage{placeins}
+\usepackage[section]{placeins}
+\usepackage{listings}
 
 \begin{document}
 \title{Distributed and Parallel Technologies - Assessed Exercise Part 1}
@@ -30,6 +31,47 @@
 \includegraphics[width=\textwidth]{ds1}
 \includegraphics[width=\textwidth]{ds2}
 \includegraphics[width=\textwidth]{ds3}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+Data Set & Threads & C & Go \\ \hline
+DS1 & 1 & 15.16 & 16.04 \\ \cline{2-4} 
+ & 2 & 7.61 & 8.05 \\ \cline{2-4} 
+ & 4 & 4.03 & 4.21 \\ \cline{2-4} 
+ & 8 & 2.06 & 2.21 \\ \cline{2-4} 
+ & 12 & 1.38 & 1.49 \\ \cline{2-4} 
+ & 16 & 1.03 & 1.15 \\ \cline{2-4} 
+ & 24 & 0.79 & 0.88 \\ \cline{2-4} 
+ & 32 & 0.64 & 0.72 \\ \cline{2-4} 
+ & 48 & 0.64 & 0.73 \\ \cline{2-4} 
+ & 64 & 0.64 & 0.73 \\ \hline
+DS2 & 1 & 65.16 & 68.32 \\ \cline{2-4} 
+ & 2 & 32.57 & 34.57 \\ \cline{2-4} 
+ & 4 & 17.04 & 17.90 \\ \cline{2-4} 
+ & 8 & 8.83 & 9.31 \\ \cline{2-4} 
+ & 12 & 5.89 & 6.26 \\ \cline{2-4} 
+ & 16 & 4.42 & 4.73 \\ \cline{2-4} 
+ & 24 & 3.39 & 3.73 \\ \cline{2-4} 
+ & 32 & 2.74 & 3.13 \\ \cline{2-4} 
+ & 48 & 2.74 & 3.10 \\ \cline{2-4} 
+ & 64 & 2.74 & 3.12 \\ \hline
+DS3 & 1 & 278.41 & 289.74 \\ \cline{2-4} 
+ & 2 & 139.01 & 145.16 \\ \cline{2-4} 
+ & 4 & 72.7 & 75.92 \\ \cline{2-4} 
+ & 8 & 37.72 & 39.39 \\ \cline{2-4} 
+ & 12 & 25.15 & 26.30 \\ \cline{2-4} 
+ & 16 & 18.89 & 19.76 \\ \cline{2-4} 
+ & 24 & 14.43 & 15.61 \\ \cline{2-4} 
+ & 32 & 11.52 & 12.96 \\ \cline{2-4} 
+ & 48 & 11.69 & 13.00 \\ \cline{2-4} 
+ & 64 & 11.69 & 13.01 \\ \hline
+\end{tabular}
+\caption{Comparing C+OpenMP and Go Parallel Runtimes for all Data Sets}
+\end{table}
+
+\clearpage
 
 \subsection{Speedups}
 
@@ -76,17 +118,47 @@
 \subsection{Discussion}
 C+OpenMP has a lower runtime than Go with every thread limit tested, and larger absolute speedup.
 This is likely because C is a lower level language without a large runtime or garbage collector, and OpenMP can make better use of the available resources, when compared to Go.
+The garbage collector in Go reserves CPU cores for its concurrent mark-and-sweep phases, which will negatively impact the program's multithreaded performance, as less CPU cores will be available for the program's goroutines.
 With that said, the difference between C+OpenMP's and Go's absolute speedup is not as large as initially anticipated.
 Go's implementation of coroutines (goroutines) and channels have been well designed and can make efficient use of the available resources.
-The garbage collector in Go reserves CPU cores for its concurrent mark-and-sweep phases, which will negatively impact the program's multithreaded performance, as less CPU cores will be available for the program's goroutines.
+
+Since Go's concurrency model has been designed for throughput, rather than reduced execution time, this comparison is not completely fair.
+C+OpenMP is intended primarily to parallelise existing C code, for reduced execution time, for example scientific computing.
+Go is better suited for a program which is required to handle many running tasks concurrently, for example web requests.
+
+During testing, Go spent more time in kernel space than C+OpenMP.
+Switching from user space to kernel space is an expensive operation, contributing to performance difference.
+This is likely because, C+OpenMP creates its thread pool once at the first parallel pragma, whereas Go builds its thread pool as more goroutines are created.
+Also, the Go garbage collector could be making syscalls in order to free unused variables during either its 'stop the world' phase or 'sweep' phase, whereas the C+OpenMP version has no explict heap allocations.
 
 \section{Programming Model Comparison}
 C+OpenMP is a higher level model for concurrent programming than Go's goroutinues.
 This has advantages, such as better guarantees for resource utilisation, lower barrier to entry and lower cognitive load in order to use.
 Furthermore, C+OpenMP allows sequential code to be parallelised with minimal changes to the existing code, where as Go requires all methods to be modified to pass return variables into a channel.
 
-During testing, Go spent more time in kernel space than C+OpenMP.
-This is likely because, C+OpenMP creates its thread pool once at the first parallel pragma, whereas Go builds its thread pool as more goroutines are created.
-Also, the Go garbage collector could be making syscalls in order to free unused variables during either its 'stop the world' phase or 'sweep' phase.
+Go's concurrency model has been designed for throughput, rather than reduced execution time.
+Therefore, is much better suited for programs such as web servers, in comparison to C+OpenMP.
+In this case its trivial to observe how a goroutine could be created for each web request, whereas an implementation in C+OpenMP is non-trivial.
+
+Personally, the Go implementation caused more issues than the C+OpenMP implementation.
+The first attempt with Go caused to many goroutines to be created for the runtime to handle correctly, leading to data races even when there were none in the code, meaning WaitGroups would never unlock.
+The second attempt lead to a full system freeze as the program exceeded 32GB of memory usage.
+This was due to a single channel being created with a buffer the size of the number of iterations the euler function would run, for each hiteration in the sumTotient function.
+The final attempt involved an array of single element channels, with the length of the difference between the upper and lower bounds provided.
+Each channel would be passed into an invocation of euler.
+C+OpenMP on the other hand, there was only a single attempt, which had multiple iterations of tweaking OpenMP's pragma clauses.
+One issue with the C+OpenMP version was the loop in the euler function.
+On all machines except the GPGNodes, an OpenMP for pragma could be used on the loop to reduce runtimes by an order of magnitiude.
+With this second pragma, the program would run indefinitely on the GPGNodes with any thread count about 12.
+Sadly, no solution was found, as such the pragma was removed.
+
+\section{Appendix}
+\subsection{Appendix A - C+OpenMP TotientRange Program}
+\lstset{linewidth=\textwidth}
+\lstinputlisting[language=C,linewidth=\textwidth]{c/TotientRange.c}
+
+\subsection{Appendix B - Go TotientRange Program}
+\lstset{linewidth=\textwidth}
+\lstinputlisting[language=Go,linewidth=\textwidth,tabsize=2]{go/para/totientRange_para.go}
 
 \end{document}

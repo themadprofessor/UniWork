@@ -5,14 +5,15 @@ package main
 // run:     totientRange lower_num upper_num
 
 // Phil Trinder    30/8/2018
+// Stuart Reilly   14/11/2019 [Add goroutines]
 
-// This program calculates the sum of the totients between a lower and an
-// upper limit
+// This program calculates the sum of the totients between a
+// lower and an upper limit
 //
 // Each function has an executable Haskell specification
 //
-// It is based on earlier work by: Greg Michaelson, Patrick Maier, Phil Trinder,
-// Nathan Charles, Hans-Wolfgang Loidl and Colin Runciman
+// It is based on earlier work by: Greg Michaelson, Patrick Maier,
+// Phil Trinder, Nathan Charles, Hans-Wolfgang Loidl and Colin Runciman
 
 import (
 	"fmt"
@@ -93,7 +94,8 @@ func main() {
 	var err error
 	// Read and validate lower and upper arguments
 	if len(os.Args) < 3 {
-		panic(fmt.Sprintf("Usage: must provide lower and upper range limits as arguments"))
+		panic(fmt.Sprintf(
+			"Usage: must provide lower and upper range limits as arguments"))
 	}
 
 	if lower, err = strconv.ParseInt(os.Args[1], 10, 64); err != nil {
@@ -105,7 +107,12 @@ func main() {
 	// Record start time
 	start := time.Now()
 	// Compute and output sum of totients
-	fmt.Println("Sum of Totients between", lower, "and", upper, "is", sumTotient(lower, upper))
+	fmt.Println("Sum of Totients between",
+		lower,
+		"and",
+		upper,
+		"is",
+		sumTotient(lower, upper))
 	// Record the elapsed time
 	t := time.Now()
 	elapsed := t.Sub(start)

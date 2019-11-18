@@ -1,15 +1,17 @@
 // TotientRange.c - Sequential Euler Totient Function (C Version)
-// compile: gcc -Wall -O -o TotientRange TotientRange.c
-// run:     ./TotientRange lower_num upper_num
+// compile: gcc -Wall -fopenmp -O3 -o TotientRange TotientRange.c
 
 // Greg Michaelson 14/10/2003
 // Patrick Maier   29/01/2010 [enforced ANSI C compliance]
+// Stuart Reilly   14/11/2019 [Add OpenMP pragmas]
 
-// This program calculates the sum of the totients between a lower and an
-// upper limit using C longs. It is based on earlier work by:
-// Phil Trinder, Nathan Charles, Hans-Wolfgang Loidl and Colin Runciman
+// This program calculates the sum of the totients between a
+// lower and an upper limit using C longs. It is based on earlier
+// work by: Phil Trinder, Nathan Charles, Hans-Wolfgang Loidl and
+// Colin Runciman
 
-// The comments provide (executable) Haskell specifications of the functions
+// The comments provide (executable) Haskell specifications of the
+// functions
 
 #include <stdio.h>
 #include <omp.h>
@@ -60,7 +62,8 @@ long sumTotient(long lower, long upper)
     long sum, i;
 
     sum = 0;
-#pragma omp parallel for simd default(none) shared(lower, upper) reduction(+:sum) schedule(dynamic)
+#pragma omp parallel for simd default(none) shared(lower, upper) \
+    reduction(+:sum) schedule(dynamic)
     for (i = lower; i <= upper; i++)
         sum += euler(i);
     return sum;
@@ -70,7 +73,6 @@ long sumTotient(long lower, long upper)
 int main(int argc, char ** argv)
 {
     long lower, upper;
-    double start, end;
 
     if (argc != 3) {
         printf("not 2 arguments\n");
@@ -78,10 +80,7 @@ int main(int argc, char ** argv)
     }
     sscanf(argv[1], "%ld", &lower);
     sscanf(argv[2], "%ld", &upper);
-    start = omp_get_wtime();
     printf("C: Sum of Totients  between [%ld..%ld] is %ld\n",
            lower, upper, sumTotient(lower, upper));
-    end = omp_get_wtime();
-    printf("Took %f seconds\n", (end - start));
     return 0;
 }
