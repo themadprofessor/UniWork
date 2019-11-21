@@ -24,6 +24,8 @@ dependencies:
 - transformers
 - containers
 - data-stringmap
+- data-default
+- http-client
 
 library:
   source-dirs: src

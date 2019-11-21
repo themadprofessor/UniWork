@@ -2,13 +2,13 @@
 
 module Main where
 
-import Test.Tasty
-import Test.Tasty.HUnit
+import           Test.Tasty
+import           Test.Tasty.HUnit
 
-import WikiScrapeLib (mostfrequentwordonpage)
+import           WikiScrapeLib    (mostfrequentwordonpage)
 
 main :: IO ()
-main = do
+main =
     defaultMain
         (testGroup
              "scraper library tests"
