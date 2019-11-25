@@ -7,14 +7,16 @@ module Scrapers
     ) where
 
 import           Text.HTML.Scalpel
+import qualified Data.Text as T
+import Control.Applicative
 
-findHeader :: Scraper String String
-findHeader = text ("h1" @: ["id" @= "firstHeading"])
+findHeader :: Scraper String T.Text
+findHeader = T.pack <$> text ("h1" @: ["id" @= "firstHeading"])
 
-findAllText :: Scraper String [String]
+findAllText :: Scraper String [T.Text]
 findAllText = do
-    list <- texts ("div" @: ["id" @= "mw-content-text"])
-    return $ concatMap words list
+    list <- chroot ("div" @: ["id" @= "mw-content-text"]) $ texts anySelector
+    return $ concatMap (T.words . T.pack) list
 
 join2scrapers :: Scraper String a -> Scraper String b -> Scraper String (a, b)
 join2scrapers l r = do

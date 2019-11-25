@@ -23,9 +23,11 @@ dependencies:
 - scalpel
 - transformers
 - containers
+- unordered-containers
 - data-stringmap
 - data-default
 - http-client
+- text
 
 library:
   source-dirs: src
@@ -45,6 +47,10 @@ executables:
     - -Wincomplete-record-updates
     - -Wincomplete-uni-patterns
     - -Wpartial-fields
+    - -O2
+    - -optc-O3
+    - -feager-blackholing
+#    - -fvectorise
     dependencies:
     - cw-scraper
 
@@ -63,6 +69,9 @@ tests:
     - -Wincomplete-record-updates
     - -Wincomplete-uni-patterns
     - -Wpartial-fields
+    - -O2
+    - -optc-O3
+    - -feager-blackholing
     dependencies:
     - cw-scraper
     - tasty
