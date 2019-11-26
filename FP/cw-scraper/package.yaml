@@ -24,7 +24,6 @@ dependencies:
 - transformers
 - containers
 - unordered-containers
-- data-stringmap
 - data-default
 - http-client
 - text

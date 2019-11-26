@@ -10,6 +10,8 @@ countries =
 wikify :: String -> URL
 wikify x = "https://en.wikipedia.org/wiki/" ++ x
 
+
+
 main :: IO ()
 main = do
     freqWords <- mapM mostfrequentwordonpage (wikify <$> countries)
