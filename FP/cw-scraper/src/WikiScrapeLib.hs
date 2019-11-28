@@ -1,23 +1,28 @@
-{-# LANGUAGE OverloadedStrings #-}
+-- Used heavily with scalpel
+{-# LANGUAGE OverloadedStrings   #-}
+
+-- Used in handleIoError's lambda function
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module WikiScrapeLib
     ( mostfrequentwordonpage
     ) where
 
+import           Control.Applicative
 import qualified Control.Exception   as Exception
 import qualified Control.Monad       as Monad
 import           Data.Char
-import           Data.Maybe          (mapMaybe, fromMaybe, fromJust)
-import qualified Data.HashSet        as Set
 import qualified Data.HashMap.Strict as Map
+import qualified Data.HashSet        as Set
+import           Data.Maybe          (fromJust, fromMaybe, mapMaybe)
+import           Data.Ord
+import qualified Data.Text           as T
 import           Network.HTTP.Client (HttpException)
 import           Scrapers
 import           Text.HTML.Scalpel
-import qualified Data.Text           as T
-import           Control.Applicative
-import           Data.Ord
 
 type Header = T.Text
+
 type Counts = Map.HashMap T.Text Int
 
 -- Find the most common word on the wikipedia page at the given URL.
@@ -27,8 +32,9 @@ type Counts = Map.HashMap T.Text Int
 --   - Is found in the stopwords.txt file
 --   - Has the same first 4 letters as the header of the wikipedia page
 mostfrequentwordonpage :: URL -> IO (Maybe String)
-mostfrequentwordonpage url = do
+mostfrequentwordonpage url
     -- scraped is the tuple (header_of_page, list_of_words)
+ = do
     scraped <- handleIoError $ scrapeURL url (join2scrapers findHeader findAllText)
     skipSet <- buildSkipSet "stopwords.txt"
     return
@@ -39,12 +45,7 @@ mostfrequentwordonpage url = do
 
 -- Handle a HTTPException by returning IO Nothing on exception
 handleIoError :: IO (Maybe a) -> IO (Maybe a)
-handleIoError io = do
-    may <- (Exception.try :: IO (Maybe a) -> IO (Either HttpException (Maybe a))) io
-    return $
-        case may of
-            Left _  -> Nothing
-            Right x -> x
+handleIoError io = Exception.catch io (\(e :: HttpException) -> pure Nothing)
 
 -- Normalise the given word, returning Nothing if the normalised word is empty.
 -- This will remove a trailing "'s", all non-letter characters, and set every character to lower case.
@@ -55,15 +56,7 @@ normaliseWord word =
         then norm $ T.dropEnd 2 word
         else norm word
   where
-    norm =
-        T.toLower .
-        T.pack .
-        T.foldl'
-            (\acc c ->
-                 if isLetter c
-                     then acc ++ [c]
-                     else acc)
-            []
+    norm = T.toLower . T.filter isLetter
 
 -- Find the key with the largest value.
 -- Used to find the word with the highest frequency.
@@ -73,10 +66,10 @@ maxElement counts =
         then Nothing
         else Just common
   where
-    common = fst (Map.foldlWithKey' maxElementFold ("", 0) counts)
+    common = fst (Map.foldlWithKey' maxElementFold (T.empty, 0) counts)
 
 -- The function used in maxElement's foldl
--- Returns the first argument if the second element of the first argument is larger than the third arguemnt, otherwise
+-- Returns the first argument if the second element of the first argument is larger than the third argument, otherwise
 -- returns the second and first argument as a tuple.
 maxElementFold :: Ord a => (b, a) -> b -> a -> (b, a)
 maxElementFold prev word count =
@@ -117,11 +110,16 @@ buildSkipSet path = do
 --   - The first four letters are not the same as the first four letters of the given header
 --   - The word is not in the given set of skip words
 isValidWord :: Set.HashSet T.Text -> Header -> T.Text -> Bool
-isValidWord skipSet header word = T.compareLength word 1 == GT && T.all isLetter word && not (prefix `T.isPrefixOf` word) && not (word `Set.member` skipSet)
+isValidWord skipSet header word =
+    T.compareLength word 1 == GT &&
+    T.all isLetter word && not (prefix `T.isPrefixOf` word) && not (word `Set.member` skipSet)
   where
     prefix = T.take 4 header
 
 -- Handle empty Texts.
 -- If the given text is empty, return Nothing, otherwise return Just text.
 textMaybe :: T.Text -> Maybe T.Text
-textMaybe t = if T.null t then Nothing else Just t
+textMaybe t =
+    if T.null t
+        then Nothing
+        else Just t
