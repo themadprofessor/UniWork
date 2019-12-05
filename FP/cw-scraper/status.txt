@@ -1,13 +1,7 @@
-<Insert Student Name Here>
-GUID:
-Date:
-200 words max
-Some questions to consider:
+Stuart Reilly
+GUID: 2258082
+Date: 01/12/2019
 
-Does your code build properly with "stack build"?
-
-Are there any parts of the specification you did not implement in part
-A?
-
-For the 'stretch' part B, which libraries did you use and what kind of
-output did you generate?
+The code builds successfully with "stack build".
+Both part A and B have been implemented.
+Part B utilises the pandoc library to output a HTML document called 'output.html', containing a table displaying the data.

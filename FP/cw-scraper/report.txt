@@ -1,29 +1,42 @@
-<Insert Student Name Here>
-GUID:
-Date:
+Stuart Reilly
+GUID: 2248082
+Date: 01/12/2019
 
--- write what you want in here -- this is just some filler text --
-500 words max
+For this report , I am comparing my experiences with Haskell and
+Rust. In particular, I have used the Scalpel scraping library in 
+Haskell, and the combination of the scraper scraping library and the
+reqwest HTTP client library.
 
-For this report, I am comparing my experiences with Haskell and
-Python.  In particular, I have used the Scalpel scraping library in
-Haskell, and the equivalent scrapy library in Python.
+Personally, I found the Haskell implementation much more of a
+challenge to implement. This is largely due preexisting experience
+with Rust. With that said, there were some issues raised while
+using Haskell. The error messages produced by GHC are not anywhere
+near as helpful or easy to understand as the error produced by 
+rustc. Rustc produces easy to understand error messages, a link
+to the official documentation describing the error, clearly stating
+which sections of code produced the error, and often providing clear
+solutions. In order to get GHC to produce useful errors, the code
+had to broken down in many small functions, otherwise the errors
+would be very obtuse.
 
-Code size: Functional code in general (and Haskell in particular) is
-  highly concise. This comes from powerful features like higher order
-  functions on lists- much more concise than for/while loop
-  control-flow structures in Python. Also, high-level operators and
-  functions are provided in the standard libraries (like Data.List).
+I also find the readability of Haskell to be worse than Rust, 
+primarily due to its syntax. For example, the lack of brackets for
+function arguments hinders readability. The Rust implementation 
+followed a functional structure, in a similar fashion to the 
+Haskell implementation. This resulted in a shorter, and easier to
+understand Rust implementation.
 
+Rust's toolchain is much easier to work with in my opinion. Rust
+only requires a dependency to be specified once in the crate's
+Cargo.toml (a create is a Rust package), whereas Stack requires
+a dependency to be specified in both the stack.yaml and 
+package.yaml, if it is not part of stackage. The reason Stack 
+requires this is supposedly to have reproducible builds, but Cargo
+(Rust's package manager and build tool) also has reproducible
+build thanks to a Cargo.lock file. Cargo.lock is generated from
+the Cargo.toml file with specific builds of dependencies.
 
-Code readability: While Haskell code is particularly dense, it can be
-  difficult to read sometimes. Meaningful variable names might help.
-
-
-Code maintainability:
-  Bug fixes? Comments?
-
-
-Toolchain support: Does stack work as well as pip? Is there as much
-  online support for Haskell as for Python? Does this affect developer
-  productivity at all?
+The ability to easily partially apply a function in Haskell is 
+a postive. By only providing some of the arguments to a function,
+a partially applied function is returned. Whereas in Rust, this 
+would have to be written as an explict closure.
