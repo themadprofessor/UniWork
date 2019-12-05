@@ -37,7 +37,9 @@ handle_info(finished, State) ->
 handle_info({range, Lower, Upper}, State) ->
   io:format("~p: Computing range: ~p ~p~n", [State#totientrangeWorker_state.name, Lower, Upper]),
   Res = sumTotient(Lower, Upper),
-  server ! {worker_done, Res, State#totientrangeWorker_state.name}.
+  server ! {worker_done, Res, State#totientrangeWorker_state.name},
+  io:format("~p: Finished~n", [State#totientrangeWorker_state.name]),
+  {noreply, State}.
 
 terminate(_Reason, _State) ->
   ok.
