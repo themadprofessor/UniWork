@@ -9,7 +9,8 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2,
   code_change/3]).
 
--record(totientrangeNWorkersReliable_state, {remaining_workers, workers, current_sum, timestamp}).
+-record(totientrangeNWorkersReliable_state, {remaining_workers, workers,
+  current_sum, timestamp}).
 
 %%%===================================================================
 %%% Spawning and gen_server implementation
@@ -24,7 +25,8 @@ start() ->
 
 init([]) ->
   io:format("Server: Started~n"),
-  {ok, #totientrangeNWorkersReliable_state{ remaining_workers = 0, workers = [], current_sum = 0 }}.
+  {ok, #totientrangeNWorkersReliable_state{ remaining_workers = 0,
+    workers = [], current_sum = 0 }}.
 
 handle_call(_Request, _From, State) ->
   {reply, ok, State}.
@@ -33,13 +35,15 @@ handle_cast(_Request, State) ->
   {noreply, State}.
 
 handle_info(finished, State) ->
-  lists:foreach(fun gen_server:stop/1, State#totientrangeNWorkersReliable_state.workers),
+  lists:foreach(fun gen_server:stop/1,
+    State#totientrangeNWorkersReliable_state.workers),
   gen_server:stop(server);
 
 handle_info({worker_done, Res, Name}, State) ->
   if
     State#totientrangeNWorkersReliable_state.remaining_workers == 1 ->
-      io:format("Server: Sum of totients: ~p~n", [State#totientrangeNWorkersReliable_state.current_sum + Res]),
+      io:format("Server: Sum of totients: ~p~n",
+        [State#totientrangeNWorkersReliable_state.current_sum + Res]),
       {_, S, US} = State#totientrangeNWorkersReliable_state.timestamp,
       printElapsed(S, US),
       NewState = #totientrangeNWorkersReliable_state{
@@ -49,9 +53,12 @@ handle_info({worker_done, Res, Name}, State) ->
       };
     true -> {
       NewState = #totientrangeNWorkersReliable_state{
-        current_sum = State#totientrangeNWorkersReliable_state.current_sum + Res,
-        remaining_workers = State#totientrangeNWorkersReliable_state.remaining_workers - 1,
-        workers = lists:delete(Name, State#totientrangeNWorkersReliable_state.workers),
+        current_sum =
+          State#totientrangeNWorkersReliable_state.current_sum + Res,
+        remaining_workers =
+          State#totientrangeNWorkersReliable_state.remaining_workers-1,
+        workers = lists:delete(Name,
+          State#totientrangeNWorkersReliable_state.workers),
         timestamp = State#totientrangeNWorkersReliable_state.timestamp
       }
     }
@@ -71,7 +78,7 @@ handle_info({range, Lower, Upper, Num}, _State) ->
 terminate(_Reason, _State) ->
   ok.
 
-code_change(_OldVsn, State = #totientrangeNWorkersReliable_state{}, _Extra) ->
+code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
 
 %%%===================================================================
@@ -79,13 +86,13 @@ code_change(_OldVsn, State = #totientrangeNWorkersReliable_state{}, _Extra) ->
 %%%===================================================================
 spawn_worker(Name, Lower, Upper) ->
   watcher:start(Name),
-  Name ! {range, Lower, Upper}.
+  Name ! {range, Lower, Upper},
+  Name.
 
 build_worker_list(0, _Inc) -> [];
-build_worker_list(1, Inc) ->
-  [spawn_worker(workerName(1), 1, Inc)];
 build_worker_list(N, Inc) ->
-  [spawn_worker(workerName(N), ((N-1) * Inc) + 1, N * Inc) | build_worker_list(N-1, Inc)].
+  [spawn_worker(workerName(N), ((N-1) * Inc) + 1, N * Inc) |
+    build_worker_list(N-1, Inc)].
 
 workerName(Num) ->
   list_to_atom( "worker" ++ integer_to_list( Num )).

@@ -15,15 +15,98 @@
 
 \begin{table}[h]
 	\centering
-	\begin{tabular}{|l|l|l|}
+	\begin{tabular}{|l|l|l|l|}
 		\hline
-		Data Set & Go Runtimes & C Runtimes \\ \hline
-		DS1 & 15.95 & 15.17s \\ \hline
-		DS2 & 67.93 & 65.15s \\ \hline
-		DS3 & 288.97 & 278.39 \\ \hline
+		Data Set & Go Runtimes & C Runtimes & Erlang Runtimes \\ \hline
+		DS1 & 15.95 & 15.17s & 27.53s \\ \hline
+		DS2 & 67.93 & 65.15s & 118.07 \\ \hline
+		DS3 & 288.97 & 278.39 & 495.23 \\ \hline
 	\end{tabular}
 	\caption{Comparing C and Go Sequential Runtimes}
 \end{table}
+
+\section{Two Worker Totient Range Erlang Program}
+The following outputs are from the runner function, rather than directly from the shell.
+Also, they were ran on my own laptop, rather than a GPGNode.
+
+\begin{verbatim}
+Server: Started
+lower_worker: Started
+lower_worker: Computing range: 1 2001
+upper_worker: Started
+upper_worker: Computing range: 2002 4000
+lower_worker: Finished
+upper_worker: Finished
+Server: Sum of totients: 4863602
+Time taken in Secs, MicroSecs 1 473208
+\end{verbatim}
+
+\begin{verbatim}
+Server: Started
+lower_worker: Started
+lower_worker: Computing range: 1 7501
+upper_worker: Started
+upper_worker: Computing range: 7502 15000
+lower_worker: Finished
+upper_worker: Finished
+Server: Sum of totients: 68394316
+Time taken in Secs, MicroSecs 19 154596
+\end{verbatim}
+
+\section{Multi Worker Erlang Totient Range Program}
+The following outputs are from the runner function, rather than directly from the shell.
+Also, they were ran on my own laptop, rather than a GPGNode.
+
+\begin{verbatim}
+Server: Started
+worker6: Started
+worker6: Computing range: 3336 4002
+worker5: Started
+worker5: Computing range: 2669 3335
+worker4: Started
+worker4: Computing range: 2002 2668
+worker3: Started
+worker3: Computing range: 1335 2001
+worker2: Started
+worker2: Computing range: 668 1334
+worker1: Started
+worker1: Computing range: 1 667
+worker1: Finished
+worker4: Finished
+worker2: Finished
+worker3: Finished
+worker5: Finished
+worker6: Finished
+Server: Sum of totients: 4868834
+Time taken in Secs, MicroSecs 0 949978
+\end{verbatim}
+
+\begin{verbatim}
+Server: Started
+worker6: Started
+worker6: Computing range: 12501 15000
+worker5: Started
+worker5: Computing range: 10001 12500
+worker4: Started
+worker4: Computing range: 7501 10000
+worker3: Started
+worker3: Computing range: 5001 7500
+worker2: Started
+worker2: Computing range: 2501 5000
+worker1: Started
+worker1: Computing range: 1 2500
+worker1: Finished
+worker2: Finished
+worker3: Finished
+worker4: Finished
+worker5: Finished
+worker6: Finished
+Server: Sum of totients: 68394316
+Time taken in Secs, MicroSecs 10 555939
+\end{verbatim}
+
+\section{Reliable Multi Worker Erlang Totient Range Program}
+I was not able to complete this implementation, due to an issue where only the first watcher would start its child.
 
 \section{Comparative Parallel Performance Measurements}
 \subsection{Runtimes}
@@ -34,39 +117,39 @@
 
 \begin{table}[!h]
 \centering
-\begin{tabular}{|l|l|l|l|}
+\begin{tabular}{|l|l|l|l|l|}
 \hline
-Data Set & Threads & C & Go \\ \hline
-DS1 & 1 & 15.16 & 16.04 \\ \cline{2-4} 
- & 2 & 7.61 & 8.05 \\ \cline{2-4} 
- & 4 & 4.03 & 4.21 \\ \cline{2-4} 
- & 8 & 2.06 & 2.21 \\ \cline{2-4} 
- & 12 & 1.38 & 1.49 \\ \cline{2-4} 
- & 16 & 1.03 & 1.15 \\ \cline{2-4} 
- & 24 & 0.79 & 0.88 \\ \cline{2-4} 
- & 32 & 0.64 & 0.72 \\ \cline{2-4} 
- & 48 & 0.64 & 0.73 \\ \cline{2-4} 
- & 64 & 0.64 & 0.73 \\ \hline
-DS2 & 1 & 65.16 & 68.32 \\ \cline{2-4} 
- & 2 & 32.57 & 34.57 \\ \cline{2-4} 
- & 4 & 17.04 & 17.90 \\ \cline{2-4} 
- & 8 & 8.83 & 9.31 \\ \cline{2-4} 
- & 12 & 5.89 & 6.26 \\ \cline{2-4} 
- & 16 & 4.42 & 4.73 \\ \cline{2-4} 
- & 24 & 3.39 & 3.73 \\ \cline{2-4} 
- & 32 & 2.74 & 3.13 \\ \cline{2-4} 
- & 48 & 2.74 & 3.10 \\ \cline{2-4} 
- & 64 & 2.74 & 3.12 \\ \hline
-DS3 & 1 & 278.41 & 289.74 \\ \cline{2-4} 
- & 2 & 139.01 & 145.16 \\ \cline{2-4} 
- & 4 & 72.7 & 75.92 \\ \cline{2-4} 
- & 8 & 37.72 & 39.39 \\ \cline{2-4} 
- & 12 & 25.15 & 26.30 \\ \cline{2-4} 
- & 16 & 18.89 & 19.76 \\ \cline{2-4} 
- & 24 & 14.43 & 15.61 \\ \cline{2-4} 
- & 32 & 11.52 & 12.96 \\ \cline{2-4} 
- & 48 & 11.69 & 13.00 \\ \cline{2-4} 
- & 64 & 11.69 & 13.01 \\ \hline
+Data Set & Threads & C & Go & Erlang \\ \hline
+DS1 & 1 & 15.16 & 16.05 & 27.36 \\ \cline{2-5} 
+ & 2 & 7.61 & 8.05 & 21.30 \\ \cline{2-5} 
+ & 5 & 5.03 & 5.21 & 12.86 \\ \cline{2-5} 
+ & 8 & 2.06 & 2.21 & 7.25 \\ \cline{2-5} 
+ & 12 & 1.38 & 1.59 & 5.31 \\ \cline{2-5} 
+ & 16 & 1.03 & 1.15 & 3.89 \\ \cline{2-5} 
+ & 25 & 0.79 & 0.88 & 2.87 \\ \cline{2-5} 
+ & 32 & 0.65 & 0.72 & 2.30 \\ \cline{2-5} 
+ & 58 & 0.65 & 0.73 & 2.15 \\ \cline{2-5} 
+ & 65 & 0.65 & 0.73 & 1.87 \\ \hline
+DS2 & 1 & 65.16 & 68.32 & 118.19 \\ \cline{2-5} 
+ & 2 & 32.57 & 35.57 & 90.07 \\ \cline{2-5} 
+ & 5 & 17.05 & 17.90 & 55.55 \\ \cline{2-5} 
+ & 8 & 8.83 & 9.31 & 30.56 \\ \cline{2-5} 
+ & 12 & 5.89 & 6.26 & 21.19 \\ \cline{2-5} 
+ & 16 & 5.52 & 5.73 & 16.29 \\ \cline{2-5} 
+ & 25 & 3.39 & 3.73 & 11.56 \\ \cline{2-5} 
+ & 32 & 2.75 & 3.13 & 9.88 \\ \cline{2-5} 
+ & 58 & 2.75 & 3.10 & 8.25 \\ \cline{2-5} 
+ & 65 & 2.75 & 3.12 & 7.33 \\ \hline
+DS3 & 1 & 278.51 & 289.75 & 595.55 \\ \cline{2-5} 
+ & 2 & 139.01 & 155.16 & 382.53 \\ \cline{2-5} 
+ & 5 & 72.7 & 75.92 & 230.69 \\ \cline{2-5} 
+ & 8 & 37.72 & 39.39 & 129.32 \\ \cline{2-5} 
+ & 12 & 25.15 & 26.30 & 89.95 \\ \cline{2-5} 
+ & 16 & 18.89 & 19.76 & 69.33 \\ \cline{2-5} 
+ & 25 & 15.53 & 15.61 & 59.67 \\ \cline{2-5} 
+ & 32 & 11.52 & 12.96 & 51.02 \\ \cline{2-5} 
+ & 58 & 11.69 & 13.00 & 33.57 \\ \cline{2-5} 
+ & 65 & 11.69 & 13.01 & 31.56 \\ \hline
 \end{tabular}
 \caption{Comparing C+OpenMP and Go Parallel Runtimes for all Data Sets}
 \end{table}
@@ -88,8 +171,9 @@ DS3 & 1 & 278.41 & 289.74 \\ \cline{2-4}
 		Language & Sequential Runtime (s) & Best Parallel Runtime (s) & Best Speedup & No. Threads \\ \hline
 		Go & 15.17 & 0.72 & 22.15 & 32 \\ \hline
 		C + OpenMP & 15.95 & 0.64 & 23.70 & 32 \\ \hline
+		Erlang & 27.53 & 1.87 & 14.62 & 64 \\ \hline
 	\end{tabulary}
-	\caption{Comparing C+OpenMP and Go Parallel Runtimes and Speedups for DS1}
+	\caption{Comparing C+OpenMP, Erlang and Go Parallel Runtimes and Speedups for DS1}
 \end{table}
 
 \begin{table}[!h]
@@ -99,8 +183,9 @@ DS3 & 1 & 278.41 & 289.74 \\ \cline{2-4}
 		Language & Sequential Runtime (s) & Best Parallel Runtime (s) & Best Speedup & No. Threads \\ \hline
 		Go & 67.93 & 3.10 & 21.91 & 48 \\ \hline
 		C + OpenMP & 65.15 & 2.64 & 23.78 & 32 \\ \hline
+		Erlang & 118.07 & 7.33 & 16.11 & 64 \\ \hline
 	\end{tabulary}
-	\caption{Comparing C+OpenMP and Go Parallel Runtimes and Speedups for DS2}
+	\caption{Comparing C+OpenMP, Erlang and Go Parallel Runtimes and Speedups for DS2}
 \end{table}
 
 \begin{table}[!h]
@@ -110,8 +195,9 @@ DS3 & 1 & 278.41 & 289.74 \\ \cline{2-4}
 		Language & Sequential Runtime (s) & Best Parallel Runtime (s) & Best Speedup & No. Threads \\ \hline
 		Go & 288.97 & 13.00 & 22.23 & 48 \\ \hline
 		C + OpenMP & 278.39 & 11.52 & 24.17 & 32 \\ \hline
+		Erlang & 495.23 & 32.56 & 15.69 & 64 \\ \hline
 	\end{tabulary}
-	\caption{Comparing C+OpenMP and Go Parallel Runtimes and Speedups for DS3}
+	\caption{Comparing C+OpenMP, Erlang and Go Parallel Runtimes and Speedups for DS3}
 \end{table}
 
 \FloatBarrier
@@ -130,6 +216,10 @@ During testing, Go spent more time in kernel space than C+OpenMP.
 Switching from user space to kernel space is an expensive operation, contributing to performance difference.
 This is likely because, C+OpenMP creates its thread pool once at the first parallel pragma, whereas Go builds its thread pool as more goroutines are created.
 Also, the Go garbage collector could be making syscalls in order to free unused variables during either its 'stop the world' phase or 'sweep' phase, whereas the C+OpenMP version has no explict heap allocations.
+
+Erlang is slower over when compared to both Go and C + OpenMP.
+This is likely due to how Erlang is designed to create reliable programs, adding over head of this.
+Whereas, Go and C + OpenMP are aimed more towards performance.
 
 \section{Programming Model Comparison}
 C+OpenMP is a higher level model for concurrent programming than Go's goroutinues.
@@ -160,5 +250,33 @@ Sadly, no solution was found, as such the pragma was removed.
 \subsection{Appendix B - Go TotientRange Program}
 \lstset{linewidth=\textwidth}
 \lstinputlisting[language=Go,linewidth=\textwidth,tabsize=2]{go/para/totientRange_para.go}
+
+\subsection{Appendix C - Erlang totientrange2Workers Program}
+\lstset{linewidth=\textwidth}
+{\footnotesize\lstinputlisting[language=Erlang,linewidth=\textwidth,tabsize=2]{erlang/src/totientrange2Workers.erl}}
+
+\subsubsection{totientrangeWorker}
+\lstset{linewidth=\textwidth}
+{\footnotesize\lstinputlisting[language=Erlang,linewidth=\textwidth,tabsize=2]{erlang/src/totientrangeWorker.erl}}
+
+\subsection{Appendix D - Erlang totientrangeNWorkers Program}
+\lstset{linewidth=\textwidth}
+{\footnotesize\lstinputlisting[language=Erlang,linewidth=\textwidth,tabsize=2]{erlang/src/totientrangeNWorkers.erl}}
+
+\subsubsection{totientrangeWorker}
+\lstset{linewidth=\textwidth}
+{\footnotesize\lstinputlisting[language=Erlang,linewidth=\textwidth,tabsize=2]{erlang/src/totientrangeWorker.erl}}
+
+\subsection{Appendix E - Erlang totientrangeNWorkersReliable Program}
+\lstset{linewidth=\textwidth}
+{\footnotesize\lstinputlisting[language=Erlang,linewidth=\textwidth,tabsize=2]{erlang/src/totientrangeNWorkersReliable.erl}}
+
+\subsubsection{watcher.erl}
+\lstset{linewidth=\textwidth}
+{\footnotesize\lstinputlisting[language=Erlang,linewidth=\textwidth,tabsize=2]{erlang/src/watcher.erl}}
+
+\subsubsection{totientrangeWorker.erl}
+\lstset{linewidth=\textwidth}
+{\footnotesize\lstinputlisting[language=Erlang,linewidth=\textwidth,tabsize=2]{erlang/src/totientrangeWorker.erl}}
 
 \end{document}

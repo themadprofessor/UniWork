@@ -20,9 +20,10 @@
 %%%===================================================================
 
 start(Name) ->
-  gen_server:start({local, Name}, ?MODULE, [Name], []).
+  gen_server:start_link({local, Name}, ?MODULE, [Name], []).
 
 init([Name]) ->
+  io:format("~p: Started~n", [Name]),
   {ok, #totientrangeWorker_state{name = Name}}.
 
 handle_call(_Request, _From, State) ->
