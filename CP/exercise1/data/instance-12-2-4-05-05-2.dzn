@@ -1,0 +1,6 @@
+STUDENTS = {Eileen,Keith,Cameron,Joy,Megan,Nicole,June,Erica,Alex,Harvey,Carol,Kristin};
+T = 12;
+LWB = 2;
+UPB = 4;
+apart = [|Joy,Harvey|Alex,Harvey|];
+together = [|Cameron,Carol|Nicole,Kristin|June,Alex|Erica,Harvey|];

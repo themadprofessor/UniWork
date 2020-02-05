@@ -1,0 +1,34 @@
+
+Student Name: 
+
+Marks: Team Allocator
+---------------------
+The exercise is marked out of 100 and amounts to 10% of final mark.
+
+Marking
+-------
+
+0. Complies with instructions
+   COMMENTS:
+
+1. Coding
+   - appropriate constrained integer variables
+   - appropriate constraints
+   - adequate/readable output
+   - adequate runtime performance
+   - search for satisfaction
+   - search for optimisation
+   - code quality, efficiency, comments, layout, readability ...
+   
+   MARKS (out of 70):
+   
+
+2. Report
+   - description of your model
+   - typical performance
+   - possible enhancements or alternative models that might be considered
+   - report quality, grammar and spelling
+	 
+   MARKS: (out of 30): 
+
+3. Total: 

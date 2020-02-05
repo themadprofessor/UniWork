@@ -1,0 +1,6 @@
+STUDENTS = {Vivian,Kelly,Stacey,Shirley,Gloria,Samuel,Todd,Kathryn,Gail,Cathy,Maurice,James};
+T = 12;
+LWB = 2;
+UPB = 4;
+apart = [|Vivian,Shirley|Vivian,Cathy|];
+together = [|Stacey,Samuel|Stacey,Todd|Shirley,Todd|Gloria,Todd|];

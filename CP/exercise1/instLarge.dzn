@@ -1,0 +1,6 @@
+STUDENTS = {Tamara,Kristina,Clarence,Lucille,Pauline,Renee,Denise,Dolores,Warren,Billy,Eddie,Vernon,Robyn,Victoria,Bill,Clyde,Ruth,Oscar,Lois,Tracey,Dale,Lucy,Grace,Ken,Donald,Danielle,Molly,Yvonne,Randall,Tara,Theresa,Franklin,Norman,Harold,Tammy,Tommy,Marsha,Toni,Andrea,Nicole,Leslie,Pat,Erica,Gilbert,Erin,Catherine,Caroline,Kimberly,Rita,Gladys};
+T = 12;
+LWB = 5;
+UPB = 7;
+apart = [|Tamara,Denise|Kristina,Tammy|Lucille,Leslie|Lucille,Gilbert|Pauline,Denise|Pauline,Caroline|Billy,Caroline|Vernon,Lucy|Victoria,Pat|Clyde,Danielle|Oscar,Erica|Lucy,Ken|Grace,Kimberly|Molly,Erica|Harold,Gilbert|Nicole,Erin|];
+together = [|Tamara,Vernon|Kristina,Lucy|Kristina,Randall|Clarence,Yvonne|Dolores,Clyde|Dolores,Oscar|Victoria,Lucy|Bill,Gilbert|Dale,Franklin|Dale,Andrea|Lucy,Donald|Grace,Erica|Tommy,Erin|Erica,Rita|Erin,Kimberly|];

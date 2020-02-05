@@ -1,0 +1,6 @@
+STUDENTS = {Phillip,Maurice,Dale,Richard,Jason,Lindsay,Chris,Robert,Charles,Barbara,Andrew,Mitchell};
+T = 12;
+LWB = 2;
+UPB = 4;
+apart = [|Lindsay,Andrew|Lindsay,Mitchell|];
+together = [|Dale,Charles|Charles,Barbara|];

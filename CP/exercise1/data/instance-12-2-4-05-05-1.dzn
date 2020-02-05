@@ -1,0 +1,6 @@
+STUDENTS = {Katherine,Samantha,Juan,Carla,Crystal,Jennifer,Erika,Sam,Paula,Vanessa,Ian,Wanda};
+T = 12;
+LWB = 2;
+UPB = 4;
+apart = [|Jennifer,Erika|Paula,Ian|];
+together = [|Juan,Jennifer|];

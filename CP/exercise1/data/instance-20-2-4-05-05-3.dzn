@@ -1,0 +1,6 @@
+STUDENTS = {Mike,Dawn,Monica,Amy,Harvey,Brent,Glenn,Lee,Chris,Rick,Emma,Martha,Harry,Lori,Allan,Tim,Leslie,Bill,Andrew,Edna};
+T = 20;
+LWB = 2;
+UPB = 4;
+apart = [|Dawn,Harry|Dawn,Edna|Monica,Amy|Monica,Emma|Harvey,Brent|Glenn,Martha|Chris,Emma|Rick,Martha|];
+together = [|Amy,Brent|Amy,Harry|Harvey,Allan|Brent,Andrew|Lee,Bill|Martha,Tim|];

@@ -1,0 +1,6 @@
+STUDENTS = {Richard,Cindy,Martin,Marshall,Arlene,Deborah,Samuel,Rhonda,Lorraine,Edward,Lynne,Billie,Gene,Jerry,Claudia,Veronica,Kathleen,Marion,Sharon,Juanita,Victoria,Evelyn,Rodney,Stuart,Jonathan,Marsha,Greg,Kay,Karl,Brent,Jay,Donald,Karen,Clarence,Katherine,Marvin,Gordon,Leonard,Eileen,Hilda,Carlos,Gregory,Barbara,Melinda,Erik,Johnny,Ross,Eugene,Milton,Michael};
+T = 50;
+LWB = 3;
+UPB = 5;
+apart = [|Richard,Jerry|Samuel,Rhonda|Billie,Katherine|Gene,Jay|Jerry,Gordon|Sharon,Leonard|Sharon,Milton|Victoria,Marsha|Victoria,Clarence|Evelyn,Melinda|Evelyn,Milton|Rodney,Milton|Stuart,Greg|Jay,Melinda|Karen,Melinda|Carlos,Milton|];
+together = [|Cindy,Rhonda|Cindy,Karl|Marshall,Barbara|Samuel,Ross|Lorraine,Rodney|Lynne,Hilda|Gene,Juanita|Evelyn,Eugene|Marsha,Greg|Hilda,Carlos|];

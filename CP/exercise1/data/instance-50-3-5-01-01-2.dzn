@@ -1,0 +1,6 @@
+STUDENTS = {Donald,Pamela,Matthew,Pam,Leo,Todd,Angela,Holly,Troy,Gwendolyn,Dana,Frank,Juanita,Leslie,Barbara,Maurice,April,Martin,Ray,Danny,Vivian,Gregory,Lorraine,Leon,Kerry,Zachary,Elaine,Erica,Victor,Ann,Michael,Lisa,Brandon,Jennifer,Jeremy,Jill,Karl,Craig,Carol,Bobby,Robyn,Stacey,Samuel,Fred,Phillip,Alexander,Kristine,Eileen,Sean,Alex};
+T = 50;
+LWB = 3;
+UPB = 5;
+apart = [|Angela,Juanita|Angela,Samuel|Angela,Kristine|Holly,Danny|Troy,Juanita|Maurice,Elaine|Leon,Kerry|Kerry,Jill|Erica,Carol|Lisa,Brandon|];
+together = [|Donald,Alexander|April,Phillip|Martin,Ray|Martin,Robyn|Ray,Victor|Danny,Stacey|Elaine,Jennifer|Victor,Karl|Victor,Carol|Jennifer,Stacey|Jennifer,Kristine|Craig,Samuel|];
