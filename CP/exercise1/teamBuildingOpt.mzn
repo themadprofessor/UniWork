@@ -45,6 +45,9 @@ constraint forall(index in pairsTogether)(forall(team in 0..T)((teams[team,toget
 % Number of teams with students in
 var int: non_empty_teams = sum(team in 0..T)(sum(student in STUDENTS)(teams[team, student]) != 0);
 
+% All teams are equal
+constraint forall(team1,team2 in 0..T where team1 < team2)(lex_greatereq(row(teams,team1),row(teams,team2)));
+
 solve minimize non_empty_teams;
 
 output["pairs apart: = \(pairsApart) \n"];
