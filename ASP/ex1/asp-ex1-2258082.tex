@@ -2,6 +2,18 @@
 \usepackage[cm]{fullpage}
 \usepackage{newtxtext}
 \usepackage{newtxmath}
+\usepackage{listings}
+\usepackage{listings-rust}
+\usepackage{xcolor}
+
+\lstset{
+	commentstyle=\color{olive},
+	keywordstyle=\color{blue},
+	basicstyle=\footnotesize\selectfont\ttfamily,
+	tabsize=2,
+	captionpos=b
+}
+
 \begin{document}
 
 \title{Advanced Systems Programming - Summarise Exercise 1}
@@ -11,6 +23,123 @@
 \maketitle
 
 \section{Rust Memory Management}
+Rust makes use of region-based memory management rather than reference counting or a garbage
+collector.
+When an object is allocated, it's assigned to a region.
+Once this region is deallocated, all objects assigned to the region are also deallocated.
+This is similar to stack-allocations, as all objects allocated on the stack are deallocated
+when the stack frame is deallocated.
+An object can be assigned to a different region after it is allocated.
+
+This is represented in Rust as lifetimes, where a region is often the scope of the current
+function.
+A region is deallocated when the current function terminates, so all objects allocated during
+the function go out of scope and are deallocated.
+The Rust compiler tracks when an object is created, when a reference is created to the object,
+when a reference goes out of scope, when the object changes ownership and when the object goes
+out of scope.
+In Listing \ref{lst:simpleLife}, the variable \lstinline{x} has ownership of the heap-allocated
+integer 42.
+The function \lstinline{print_consume} takes ownership of \lstinline{x} as its parameter
+\lstinline{b}, so \lstinline{b} is deallocated when the function returns, deallocating the integer.
+Since the compiler tracks ownership of \lstinline{x}, the program will not compile if \lstinline{x}
+is used after \lstinline{print_consume} returns.
+If \lstinline{print_consume} returned \lstinline{b} and the \lstinline{main} function assigned the
+return value of \lstinline{print_consume} to \lstinline{x}, then \lstinline{x} could be used after
+the function returned, as ownership was returned.
+
+\begin{lstlisting}[language=Rust, float=h, label=lst:simpleLife, caption={A short example of
+	when a object is allocated and deallocated in Rust.}]
+fn print_consume(b: Box<usize>) {
+	println!("{}", b);
+} // b goes out of scope and is deallocated
+
+fn main() {
+	// Allocate space on the heap for the integer 42
+	let x = Box::new(42); 
+	// Print x
+	print_consume(x);
+	// print_consume took ownership of x so it's
+	// been deallocated
+
+	// println!("{}", x); would fail to compile
+}
+\end{lstlisting}
+
+To allow a variable to be borrowed, and not transfer ownership, Rust has four pointer types.
+Two references which follow the ownership rules, and two raw pointers which are equivalent to C
+pointers.
+The references are \lstinline{&T} and \lstinline{&mut T}, which are immutable and immutable
+respectively.
+As shown in Listing \ref{lst:refLife}, a reference cannot outlive the object it references and
+either multiple immutable references or a single mutable reference can exist at once.
+References are guaranteed to always point to valid memory and not be null.
+This is because the compiler ensures a references cannot be created to an object before it is
+initialised, and does not live longer than the object.
+As such, it is impossible to have a dangling reference or use-after-free bug.
+Since the compiler can ensure either multiple immutable references or a single mutable reference
+can exist at once, both data races and iterator invalidation can not occur.
+Both data races and iterator invalidation require either multiple mutable references or both
+mutable and immutable references to exists at once.
+Some data structures can not be represented with Rust's ownership rules.
+For example a doubly linked list requires each node to have references to the next and previous
+nodes.
+If a new node was to be added to the list, the nodes either side of where the new node will go
+will need to be modified, but this requires both mutable and immutable references to these nodes
+to exist at once.
+
+\begin{lstlisting}[language=Rust, float=h, label=lst:refLife, caption={A short example of the
+	lifetime of references and how only immutable references or a mutable reference can exist
+	at once}]
+fn print(y: &Box<usize>) {
+	println!("{}", y);
+} // Ref y dealloacted here, not heap allocation
+
+fn increment(z: &mut Box<usize>) {
+	*z += 1;
+} // Mut ref z deallocated here, not heap allocation
+
+// This function would fail to compile
+// fn generate() -> &Box<usize> {
+//	let i = Box::new(64);
+//	&i
+// } // i deallocated here so would return invalid ref
+
+fn main() {
+	// Allocate space on the heap for the integer 42
+	// Must be mut to allow mutable references
+	let mut x = Box::new(42);
+
+	increment(&mut x);
+	print(&x);
+	// x still exists here
+
+	{
+		let a = &x;
+		let b = &x;
+		// Above is valid because both immutable
+		// let bad = &mut x; would fail to compile
+	} // a and b deallocated, not x
+
+	{
+		let c = &mut x;
+		// c can be the only reference of x
+
+		// let d = &mut x;
+		// let e = &x;
+		// Both above would fail to compile
+	} // c deallocated, not x
+} // x is deallocated here
+\end{lstlisting}
+
+The raw pointers are \lstinline{*mut T} and \lstinline{*const T}, which are equivalent to C's
+\lstinline{T*} and \lstinline{const T*} pointers respectively.
+These do not follow the ownership rules, so there can be an arbitrary number of \lstinline{*mut T}
+and \lstinline{*T} to the same object at once.
+Furthermore, they do not have any automatic cleanup, there is no guarantee they point to valid
+memory and not null.
+As such raw pointers can only be dereferenced by unsafe code.
+They are primarily use for C FFI, and implementing certain data structures like doubly linked lists.
 
 \section{Comparison between Rust's and C's memory management}
 
