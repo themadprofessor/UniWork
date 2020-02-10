@@ -1,0 +1,31 @@
+# CP(M) Exercise 1
+
+## Model
+
+The model is defined as a 2D array of integers called teams, where the rows are the teams and the
+columns are the students. Each element in the grid is either 1 if the student is in the team, and
+0 otherwise. Each student must be in only one single team, so the sum of all student's columns must
+equal 1. All teams must be either empty, or within the upper and lower bounds. This is defined as
+the set of 0 and all values between the upper and lower bounds, so the sum of each team's row must
+be in this set of values. To ensure students which must be together or apart are in the same team
+or not respectively, for each pair the sum of their values on every row must be either less than 2
+if they are to be apart, or in the set of 0 and 2 if they are to be together. For students to be
+together, their sum must be 0 or 2, because either they are both in the team or are not. The sum
+must be less than 2 for students which must be apart, because either neither are in the team or
+at most one of them. To minimise the number of teams used, the variable non_empty_teams is defined
+to be the number of teams whose row sums to a non-zero value. Any team with a row which sums to 0
+contains no students, so is empty. This value is then minimised to find the optimal solution with
+the minimal number of teams used.
+
+## Symmetries
+
+The ordering of teams does not matter. For example if team 1 contained Alex and Steve, and team 2
+contained Bob and Finn, then this is the same solution if the teams were switched. This symmetry
+is removed by ensuring all teams with a lower number than a team are lexicographically greater than
+or equal to the team.
+
+## Typical Performance
+
+The model was able to find an optimal solution for the small dataset in 66 nodes, 1124 for the
+medium dataset and the large dataset didn't complete within a reasonable length of time. A node is
+a possible solution the solver attempts to fit the constraints.

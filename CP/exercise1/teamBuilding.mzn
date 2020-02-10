@@ -42,11 +42,18 @@ constraint forall(index in pairsApart)(forall(team in 0..T)((teams[team,apart[in
 % Students which must be together are togther
 constraint forall(index in pairsTogether)(forall(team in 0..T)((teams[team,together[index,1]] + teams[team,together[index,2]]) in {0,2}));
 
+% All teams are equal
+constraint forall(team1,team2 in 0..T where team1 < team2)(lex_greatereq(row(teams,team1),row(teams,team2)));
+
 solve satisfy;
 
 output["pairs apart: = \(pairsApart) \n"];
 output["pairs together: = \(pairsTogether) \n"];
 output["teamSize: = \(teamSize) \n"];
 output["teams: \n"];
+
+% Output all students, delimited with a comma
 output[show(student) ++ if student=max(STUDENTS) then "\n" else "," endif | student in STUDENTS];
+
+% Output all rows of the teams grid, right justifying each value to be the same character length as the student's name
 output["" ++ format(string_length(show(student)), 10, teams[team,student]) ++ if student=max(STUDENTS) then "\n" else "," endif | team in 0..T, student in STUDENTS];

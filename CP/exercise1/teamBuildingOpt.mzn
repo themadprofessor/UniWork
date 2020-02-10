@@ -42,11 +42,11 @@ constraint forall(index in pairsApart)(forall(team in 0..T)((teams[team,apart[in
 % Students which must be together are togther
 constraint forall(index in pairsTogether)(forall(team in 0..T)((teams[team,together[index,1]] + teams[team,together[index,2]]) in {0,2}));
 
-% Number of teams with students in
-var int: non_empty_teams = sum(team in 0..T)(sum(student in STUDENTS)(teams[team, student]) != 0);
-
 % All teams are equal
 constraint forall(team1,team2 in 0..T where team1 < team2)(lex_greatereq(row(teams,team1),row(teams,team2)));
+
+% Number of teams with students in
+var int: non_empty_teams = sum(team in 0..T)(sum(student in STUDENTS)(teams[team, student]) != 0);
 
 solve minimize non_empty_teams;
 
