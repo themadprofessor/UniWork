@@ -1,0 +1,39 @@
+
+Student Name: 
+
+Marks: Balanced Academic Curriculum Problem
+-------------------------------------------
+The exercise is marked out of 100 and amounts to 10% of final mark.
+
+Marking
+-------
+
+0. Complies with instructions
+   COMMENTS:
+
+1. Coding
+   - appropriate constrained integer variables
+   - appropriate constraints
+   - adequate runtime performance
+   - search for satisfaction
+   - search for optimisation
+   - code quality, efficiency, comments, layout, readability ...
+   
+   MARKS (out of 50):
+   
+
+2. Report
+   
+    - Description of your model, stating the variables, their domains
+      and what those variables actually mean. [15]
+    - Describe the constraints used, and what they actually mean. [5]
+    - For a problem with n courses and m periods, what will be the size of your model?
+      That is, how does the model size grow with problem input? [5]
+    - Describe any variable and value ordering heuristics used. Also, identify your
+      decision variables.  [5]
+    - Give a brief report on your computational experience solving and optimizing the problems. [10]
+    - Briefly describe at least one alternative model that might be considered. [10]
+	 
+   MARKS: (out of 50): 
+
+3. Total: 

@@ -1,0 +1,23 @@
+dew100 0
+fis100 2
+hcw310 3
+iwg101 0
+mat190 0
+mat192 0
+dew101 1
+fis101 3
+iwi131 0
+mat191 2
+mat193 1
+fis102 4
+iei134 1
+iei141 4
+mat194 3
+dewxx0 2
+hcw311 4
+iei132 4
+iei133 3
+iei131 4
+imbalance: 1
+max credit load: 8
+Model[../data/bacpTiny.txt], 5 Solutions, MINIMIZE imbalance = 1, Resolution time 0.116s, 73 Nodes (630.2 n/s), 137 Backtracks, 64 Fails, 0 Restarts
