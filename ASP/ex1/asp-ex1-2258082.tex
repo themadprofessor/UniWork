@@ -23,6 +23,7 @@
 \maketitle
 
 \section{Rust Memory Management}
+\label{rustMem}
 Rust makes use of region-based memory management rather than reference counting or a garbage
 collector.
 When an object is allocated, it's assigned to a region.
@@ -142,6 +143,94 @@ As such raw pointers can only be dereferenced by unsafe code.
 They are primarily use for C FFI, and implementing certain data structures like doubly linked lists.
 
 \section{Comparison between Rust's and C's memory management}
+C requires manual memory management through the use of \lstinline{malloc} and \lstinline{free}.
+This requires the programmer to keep track of the lifetime of objects.
+If the programmer forgets to \lstinline{free} an object, the memory will be leaked.
+Rust prevents this by ensuring all allocated memory is deallocated when it goes out of scope.
+Even if an object is freed, the programmer could still introduce a double-free or use-after-free
+bug.
+By ensuring there are no references to an object when it is deallocated, Rust can ensure these bugs
+are impossible.
+Since C does not have any compiler-enforced ownership rules, both \lstinline{T*} and
+\lstinline{*const T} can exist simultaneously, leading to data races and iterator invalidation.
+It is impossible to have both \lstinline{&T} and \lstinline{&mut T} simultaneously in Rust,
+therefore both data races and iterator invalidation are impossible in Rust.
+In C the programmer has to enforce these conditions at runtime, whereas the Rust compiler enforces
+them at compile time.
+Therefore, a safe Rust program is one which can compile, whereas a safe C program requires a large
+amount of effort to prove and enforce at runtime.
+Listing \ref{lst:rustSafe} shows a small Rust program, and Listing \ref{lst:cSafe} shows the same
+program in C with the imports omitted.
+As shown, there is a noticeable difference between the amount of code to ensure the program is
+safe, and the lack of a \lstinline{drop} method in the Rust version.
+
+\begin{lstlisting}[language=Rust, float=h, label=lst:rustSafe, caption={A short safe Rust program
+	to allocate, increment, print and deallocate an integer.}]
+fn allocate() -> Box<usize> {
+	Box::new(42);
+}
+
+fn print(i: &usize) {
+	println!("{}", *i);
+}
+
+fn main() {
+	let i = allocate();
+	*i += 1;
+	print(i);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, float=h, label=lst:cSafe, caption={A short safe C program to
+	to allocate, increment, print and deallocate an integer.}]
+int *allocate() {
+	int *i = malloc(sizeof(int));
+	if (i == NULL) {
+		return NULL;
+	}
+	*i = 42;
+	return i;
+}
+
+void print(int *i) {
+	if (i == NULL) {
+		return;
+	}
+	printf("%d\n", *i);
+}
+
+void drop(int *i) {
+	free(i);
+}
+
+int main() {
+	int *i = allocate();
+	*i += 1;
+	print(i);
+	drop(i);
+}
+\end{lstlisting}
+
+In terms of performance, Rust's memory management has no runtime cost over C's manual memory
+management.
+The Rust compiler keeps track of when objects should be freed, and inserts the code to free the
+object at that point.
+With that said, there can be argued a runtime cost to C's manual memory management over Rust's
+due to the unsafe nature of C's pointers.
+When a pointer is given to a function in C, it requires a null check to avoid segmentation faults,
+whereas Rust's references are guaranteed to never be null, so can avoid this check.
+Furthermore, once a C pointer has been given to \lstinline{free}, the programmer must either set
+all pointers to the object behind the pointer to null, or manually ensure no other pointers exist.
+C's \lstinline{free} can accept null pointers, so changing a freed pointer to null prevents
+double-free bugs.
+Since the Rust compiler keeps track of when an object is freed and ensures no references exist,
+both the runtime cost of changing pointers to null and manually tracking pointers can be avoided.
+
+Due to Rust's ownership rules, some data structures can not be represented in safe rust, for
+example doubly linked lists as discussed in Section \ref{rustMem}.
+These data structures must be implemented in unsafe code and utilise Rust's raw pointers.
+Whereas in C, there are no ownership rules, so these data structures can be implemented without
+any extra ceremony.
 
 \section{Comparison between Region-based and garbage-collected memory management}
 
