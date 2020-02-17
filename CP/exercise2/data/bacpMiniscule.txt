@@ -1,0 +1,22 @@
+noPeriods 3
+noOfCourses 10
+minCreditsPerPeriod 2
+maxCreditsPerPeriod 8
+minCoursesPerPeriod 1
+macCoursesPerPeriod 5
+CourseWithCredits
+dew100 1
+fis100 3
+hcw310 1
+iwg101 2
+mat190 1
+mat192 1
+dew101 3
+fis101 2
+iwi131 3
+mat191 3
+Prerequisites
+dew101  dew100  
+fis101  fis100  
+fis101  mat192  
+mat191  mat190  

@@ -11,7 +11,8 @@
 	keywordstyle=\color{blue},
 	basicstyle=\footnotesize\selectfont\ttfamily,
 	tabsize=2,
-	captionpos=b
+	captionpos=b,
+	language=Rust
 }
 
 \begin{document}
@@ -49,7 +50,7 @@ If \lstinline{print_consume} returned \lstinline{b} and the \lstinline{main} fun
 return value of \lstinline{print_consume} to \lstinline{x}, then \lstinline{x} could be used after
 the function returned, as ownership was returned.
 
-\begin{lstlisting}[language=Rust, float=h, label=lst:simpleLife, caption={A short example of
+\begin{lstlisting}[float=h, label=lst:simpleLife, caption={A short example of
 	when a object is allocated and deallocated in Rust.}]
 fn print_consume(b: Box<usize>) {
 	println!("{}", b);
