@@ -4,18 +4,22 @@ use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Barrier};
 
+/// Attempt to open a TcpStream to the given SocketAddr, sending it over the
+/// given if the stream successfully opened
 fn attempt_conn(chan: Sender<TcpStream>, addr: SocketAddr) {
     let conn = match TcpStream::connect(addr) {
         Ok(c) => c,
         Err(_) => return,
     };
 
-    if let Err(e) = chan.send(conn) {
+    if let Err(_e) = chan.send(conn) {
         // Can only fail to send if channel is closed
         // Channel is closed if other connection wins the race
     }
 }
 
+/// Send a HTTP 1.1 GET request to the first TcpStream from the given channel.
+/// The given str will be used as the HTTP host header.
 fn send_http(chan: Receiver<TcpStream>, host: &str) {
     let mut conn = match chan.recv() {
         Ok(c) => c,
@@ -60,13 +64,15 @@ fn send_http(chan: Receiver<TcpStream>, host: &str) {
 
         data.make_ascii_lowercase();
         if data.starts_with("content-length:") {
+            // Convert the value of content-length header to a Some(u64).
+            // If the convertion failed or content-length was empty, set content_len to None
             content_len = data.split(':').nth(1).and_then(|n| n.trim().parse::<u64>().ok());
         }
     }
 
     data.clear();
 
-    // If the header contained a content-length, read that many bytes, otherwise read till ed
+    // If the header contained a content-length, read that many bytes, otherwise read till end
     if let Some(len) = content_len {
         if let Err(e) = conn.take(len).read_to_string(&mut data) {
             eprintln!("failed to read {} bytes: {}", len, e);
@@ -100,10 +106,12 @@ fn main() {
         let barrier = Arc::new(Barrier::new(count));
         let mut threads = Vec::with_capacity(count + 1);
 
+        // Start the thread which will send the HTTP request
         threads.push(std::thread::spawn(move || {
             send_http(receiver, &addr);
         }));
 
+        // Spawn the threads to race the connections in a paused state until they have all spawned
         for sock_addr in sock_addrs {
             let b = barrier.clone();
             let chan = sender.clone();
