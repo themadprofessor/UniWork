@@ -68,19 +68,78 @@ fn main() {
 }
 \end{lstlisting}
 
+Rust has three rules for ownership: each value has a variable which is its owner, each value
+can have exactly one owner, and when the owner goes out of scope the value is dropped.
+The first and third rules are explained above and demonstrated in Listing \ref{lst:simpleLife}.
+Listing \ref{lst:owner} shows how exactly one variable can own an object.
+The variable \lstinline{x}'s stack data is copied bitwise to the variable \lstinline{y}, therefore
+the heap allocated integer is not copied, rather the pointer (Box) to it.
+Once the stack data is copied, \lstinline{x} is no longer deemed valid, so the \lstinline{drop}
+function for \lstinline{x} is not called when the function returns, avoiding a double-free.
+If the compiler did not track the ownership of the object, both \lstinline{x} and \lstinline{y}
+would both own the object, so the compiler forbids \lstinline{x} from being used after having the
+ownership of the object being passed to \lstinline{y}.
+Furthermore, if both variables where
+This is known as move semantics.
+Rust supports copy semantics, which is also shown in Listing \ref{lst:owner} with the variables
+\lstinline{a} and \lstinline{b}.
+Since the integer is not heap allocated, but stack allocated, and integers implement the
+\lstinline{Copy} trait, both \lstinline{a} and \lstinline{b} remain valid until the end of the
+function.
+Both \lstinline{a} and \lstinline{b} have their own copy of the integer.
+To facilitate creating copies of an object with move semantics, there exists the \lstinline{Clone}
+trait.
+A type which implements the \lstinline{Clone} trait is a type which can be deep copied via an
+explicit call to the \lstinline{clone} function, provided by the \lstinline{Clone} trait.
+The implementation of the \lstinline{clone} function can contain arbitrary code and as such is
+assumed to be an expensive operation.
+The \lstinline{Copy} trait on the other hand does not provide any methods, and is used as a marker.
+A type which implements the \lstinline{Copy} trait can be copied with a simple bitwise copy of the
+stack allocation for the type, and is given copy semantics.
+Since this is very cheap computationally, a bitwise copy is inflict.
+In Listing \ref{lst:owner}, the heap allocated integer \lstinline{x} does not implement
+\lstinline{Copy}, since a bitwise copy of the stack allocation would break the ownership rules, and
+lead to to variables owning the same heap allocation.
+Whereas the stack allocated integer \lstinline{a} implements \lstinline{Copy} since a simple
+bitwise copy of the stack allocation does not break the ownership rules.
+A type must manually implement the \lstinline{Clone} and \lstinline{Copy} traits.
+
+\begin{lstlisting}[language=Rust, float=h, label=lst:owner, caption={A short example of how there
+	can be only one owner of a value in Rust.}]
+fn main() {
+	// Allocate space on the heap for the integer 42
+	let x = Box::new(42);
+	// Transfer ownership of the integer to variable y
+	let y = x;
+	// x cannot be used after this point
+	println!("{}", y);
+	// println!("{}", x); would fail to compile
+
+	// Stack allocated integer
+	let a = 64;
+	// a is copied to b, so a can be used after this point
+	let b = a;
+	println!("{}", a);
+	println!("{}", b);
+} // y, a, b are deallocated
+\end{lstlisting}
+
 To allow a variable to be borrowed, and not transfer ownership, Rust has four pointer types.
-Two references which follow the ownership rules, and two raw pointers which are equivalent to C
+Two references which follow the borrowing rules, and two raw pointers which are equivalent to C
 pointers.
+The borrowing rules are all references must be valid, and at any given time either one mutable
+reference or any number of immutable references can exist.
 The references are \lstinline{&T} and \lstinline{&mut T}, which are immutable and immutable
 respectively.
 As shown in Listing \ref{lst:refLife}, a reference cannot outlive the object it references and
 either multiple immutable references or a single mutable reference can exist at once.
-References are guaranteed to always point to valid memory and not be null.
-This is because the compiler ensures a references cannot be created to an object before it is
-initialised, and does not live longer than the object.
+Te compiler ensures references follow the borrowing rules by ensuring references cannot be created
+to an object before it is initialised, and does not live longer than the object.
 As such, it is impossible to have a dangling reference or use-after-free bug.
-Since the compiler can ensure either multiple immutable references or a single mutable reference
-can exist at once, both data races and iterator invalidation can not occur.
+Furthermore, the compiler keeps track of how many mutable and immutable references exist for an
+object at once.
+Therefore, the compiler can ensure either multiple immutable references or a single mutable
+reference can exist at once, so both data races and iterator invalidation can not occur.
 Both data races and iterator invalidation require either multiple mutable references or both
 mutable and immutable references to exists at once.
 Some data structures can not be represented with Rust's ownership rules.
@@ -136,7 +195,7 @@ fn main() {
 
 The raw pointers are \lstinline{*mut T} and \lstinline{*const T}, which are equivalent to C's
 \lstinline{T*} and \lstinline{const T*} pointers respectively.
-These do not follow the ownership rules, so there can be an arbitrary number of \lstinline{*mut T}
+These do not follow the borrowing rules, so there can be an arbitrary number of \lstinline{*mut T}
 and \lstinline{*T} to the same object at once.
 Furthermore, they do not have any automatic cleanup, there is no guarantee they point to valid
 memory and not null.
@@ -144,6 +203,8 @@ As such raw pointers can only be dereferenced by unsafe code.
 They are primarily use for C FFI, and implementing certain data structures like doubly linked lists.
 
 \section{Comparison between Rust's and C's memory management}
+\label{cComp}
+
 C requires manual memory management through the use of \lstinline{malloc} and \lstinline{free}.
 This requires the programmer to keep track of the lifetime of objects.
 If the programmer forgets to \lstinline{free} an object, the memory will be leaked.
@@ -227,12 +288,97 @@ double-free bugs.
 Since the Rust compiler keeps track of when an object is freed and ensures no references exist,
 both the runtime cost of changing pointers to null and manually tracking pointers can be avoided.
 
-Due to Rust's ownership rules, some data structures can not be represented in safe rust, for
+Due to Rust's borrowing rules, some data structures can not be represented in safe rust, for
 example doubly linked lists as discussed in Section \ref{rustMem}.
 These data structures must be implemented in unsafe code and utilise Rust's raw pointers.
-Whereas in C, there are no ownership rules, so these data structures can be implemented without
+Whereas in C, there are no borrowing rules, so these data structures can be implemented without
 any extra ceremony.
 
-\section{Comparison between Region-based and garbage-collected memory management}
+\section{Comparison between Region-based and Garbage-collected memory management}
+
+Garbage-collected memory management is where the runtime keeps track of the references between all
+objects.
+Periodically, the program is interrupted while a garbage collector removes all objects which are no
+longer referenced.
+Therefore, garbage-collected languages push the memory management to a runtime cost, unlike Rust
+which forces the programmer to handle memory management at compile time.
+So, writing a program in a garbage collected language is easier than in Rust, in general.
+
+The more optimal algorithms for removing garbage objects require double the memory usage.
+These algorithms allocated two regions, one which is currently being used for allocations, and
+another which will be used for allocations after the next garbage collection.
+During garbage collection all objects, which still have live references to it, are moved to the
+unused region, then the references to these objects are updated, and the first region is
+deallocated.
+Since two regions need to be allocated for these algorithms, overall memory usage is much higher
+than Rust's region-based memory management.
+
+As discussed in Section \ref{cComp}, safe Rust can not represent a doubly linked list.
+Since garbage-collected languages do not have mutability borrowing rules like Rust, so they can
+implement a safe doubly linked list.
+Listing \ref{java} shows an example of a queue implemented in Java as a doubly linked list.
+In order to do this in Rust, \lstinline{unsafe} must be used with raw pointers.
+
+\begin{lstlisting}[language=Java, caption={An example of a queue in Java implemented as a doubly
+	linked list.}, label=java]
+public class LinkedList<T> {
+	private Node<T> head;
+	private Node<T> tail;
+
+	public LinkedList<T>(T first) {
+		Node<T> node = new Node<T>(first, null, null);
+		head = node;
+		tail = node;
+	}
+
+	public void push(T data) {
+		if (tail == null) {
+			tail = new Node<T>(data, null, null);
+			tail = head;
+		} else {
+			Node<T> oldTail = tail;
+			tail = new Node<T>(data, null, oldTail);
+			oldTail.next = tail;
+		}
+	}
+
+	public T pop() {
+		if (head == null) {
+			return null;
+		}
+		Node<T> oldHead = head;
+		head = head.next;
+		head.prev = null;
+		return head.data;
+
+	}
+
+	private class Node<T> {
+		protected T data;
+		protected Node<T> next;
+		protected Node<T> prev;
+
+		protected Node<T>(T data, Node<T> next, Node<T> prev) {
+			this.data = data;
+			this.next = next;
+			this.prev = prev;
+		}
+	}
+}
+\end{lstlisting}
+
+Another issue with garbage collection is they do not work efficiently with caches and virtual
+memory.
+When the garbage collector is called, the runtime performs a context switch to the garbage
+collector.
+This will invalidate all CPU caches by the time the program is switched back to.
+Furthermore, the garbage collector is likely to require access to pages which the operating
+system could have swapped to disk while the program was running.
+This will lead to page faults when switching to and from the garbage collector.
+
+Since there is no guarantee when the garbage collector is called, the amount of actively used
+by the program is non-deterministic.
+Whereas Rust can determine when to release memory at compile time, the memory usage of the program
+is deterministic.
 
 \end{document}
