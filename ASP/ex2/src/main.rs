@@ -5,16 +5,15 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Barrier};
 
 fn attempt_conn(chan: Sender<TcpStream>, addr: SocketAddr) {
-    println!("Attempt conn {}", addr);
     let conn = match TcpStream::connect(addr) {
         Ok(c) => c,
         Err(_) => return,
     };
 
     if let Err(e) = chan.send(conn) {
-        eprintln!("failed to pass connection to http thread: {}", e);
+        // Can only fail to send if channel is closed
+        // Channel is closed if other connection wins the race
     }
-    println!("ending attempt {}", addr);
 }
 
 fn send_http(chan: Receiver<TcpStream>, host: &str) {
@@ -25,6 +24,7 @@ fn send_http(chan: Receiver<TcpStream>, host: &str) {
             return;
         }
     };
+    // Connection won the race so stop anymore attempts
     drop(chan);
 
     match write!(conn, "GET / HTTP/1.1\r\nHost: {}\r\n\r\n", host) {
@@ -65,6 +65,8 @@ fn send_http(chan: Receiver<TcpStream>, host: &str) {
     }
 
     data.clear();
+
+    // If the header contained a content-length, read that many bytes, otherwise read till ed
     if let Some(len) = content_len {
         if let Err(e) = conn.take(len).read_to_string(&mut data) {
             eprintln!("failed to read {} bytes: {}", len, e);
@@ -106,12 +108,14 @@ fn main() {
             let b = barrier.clone();
             let chan = sender.clone();
             threads.push(std::thread::spawn(move || {
+                // Wait until all threads have spawned
                 b.wait();
                 attempt_conn(chan, sock_addr);
             }));
         }
 
         for x in threads {
+            // A join only returns Err if the thread panicked.
             x.join().unwrap();
         }
     }
