@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opsa-mef>
+  <define-fault-tree name="derailment">
+    <define-gate name="matsOnTracks">
+      <label>Materials on the tracks</label>
+      <or>
+        <basic-event name="flood"/>
+        <basic-event name="winds"/>
+        <basic-event name="slip"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-fault-tree name="move">
+    <define-gate name="moveTracks">
+      <label>Moved Tracks</label>
+      <or>
+        <basic-event name="flood"/>
+        <basic-event name="bridge"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-fault-tree name="metal">
+    <define-gate name="metalDistort">
+      <label>Metal Distortion</label>
+      <or>
+        <basic-event name="temp"/>
+        <basic-event name="slip"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-fault-tree name="errors">
+    <define-gate name="errors">
+      <label>Errors of Tracks</label>
+      <or>
+        <gate name="moveTracks"/>
+        <gate name="metalDistort"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-fault-tree name="push">
+    <define-gate name="pushed">
+      <label>Train Pushed Over</label>
+      <or>
+        <basic-event name="winds"/>
+        <basic-event name="slip"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-fault-tree name="powerline">
+    <define-gate name="powerLine">
+      <label>Dislodged Power Lines</label>
+      <or>
+        <basic-event name="slip"/>
+        <basic-event name="flood"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-fault-tree name="short">
+    <define-gate name="short">
+      <label>Short Circuit</label>
+      <or>
+        <basic-event name="flood"/>
+        <basic-event name="temp"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-fault-tree name="powerCut">
+    <define-gate name="powercut">
+      <label>Power Cutt</label>
+      <or>
+        <gate name="powerLine"/>
+        <gate name="short"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-fault-tree name="realDerailment">
+    <define-gate name="realDerailment">
+      <label>Transport Derailment / Cancellation</label>
+      <or>
+        <gate name="matsOnTracks"/>
+        <gate name="errors"/>
+        <gate name="pushed"/>
+        <gate name="powercut"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="winds">
+      <label>Extreme Winds</label>
+      <float value="1"/>
+    </define-basic-event>
+    <define-basic-event name="flood">
+      <label>Flooding</label>
+      <float value="1"/>
+    </define-basic-event>
+    <define-basic-event name="slip">
+      <label>Landslip</label>
+      <float value="1"/>
+    </define-basic-event>
+    <define-basic-event name="temp">
+      <label>Extreme Temp</label>
+      <float value="1"/>
+    </define-basic-event>
+    <define-basic-event name="bridge">
+      <label>Bridge Collapse</label>
+      <float value="1"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>
