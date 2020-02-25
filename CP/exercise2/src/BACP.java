@@ -1,11 +1,9 @@
-import java.io.*;
-import java.util.*;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solver;
-import org.chocosolver.solver.expression.discrete.arithmetic.IfArExpression;
 import org.chocosolver.solver.variables.IntVar;
-import org.chocosolver.solver.search.strategy.Search;
 import org.chocosolver.util.tools.ArrayUtils;
+
+import java.util.ArrayList;
 
 public class BACP {
 
@@ -21,7 +19,6 @@ public class BACP {
 	int[] period; // for saving off a solution ... see show() below
 	private int nPeriods;
 	private int nCourses;
-	private IntVar[] creditsInPeriods;
 
     private IntVar[][] table;
 
@@ -42,7 +39,7 @@ public class BACP {
 		maxCreditsInAllPeriods = model.intVar("maxCredits",minCredits,maxCredits);
 		imbalance              = model.intVar("imbalance",0,maxCredits-minCredits);
 
-		creditsInPeriods = model.intVarArray(nPeriods, minCredits, maxCredits);
+        IntVar[] creditsInPeriods = model.intVarArray(nPeriods, minCredits, maxCredits);
 
 		//
 		// create necessary variables for your model
@@ -67,13 +64,18 @@ public class BACP {
 			model.scalar(table[i], credits, ">=", minCredits).post();
 			model.scalar(table[i], credits, "<=", maxCredits).post();
 
-
+			// Collect the credit counts for periods
+			model.scalar(table[i], credits, "=", creditsInPeriods[i]).post();
 		}
+
+        model.max(maxCreditsInAllPeriods, creditsInPeriods).post();
+		model.min(minCreditsInAllPeriods, creditsInPeriods).post();
+		model.arithm(imbalance, "=", maxCreditsInAllPeriods, "-", minCreditsInAllPeriods).post();
 
 		// Ensure all prerequisites come before the courses which require them
         for (int i = 0; i < prereq.length; i++) {
             for (int before : prereq[i]) {
-                model.lexLess(ArrayUtils.getColumn(table, before), ArrayUtils.getColumn(table, i)).post();
+                model.lexLess(ArrayUtils.getColumn(table, i), ArrayUtils.getColumn(table, before)).post();
             }
         }
 	}
