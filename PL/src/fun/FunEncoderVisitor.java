@@ -6,6 +6,8 @@
 //
 // Based on a previous version by David Watt.
 //
+// Add for loop and switch statement support by Stuart Reilly February 2020
+//
 //////////////////////////////////////////////////////////////
 
 package fun;
@@ -253,6 +255,35 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 		obj.emit12(SVM.JUMP, startaddr);
 		int exitaddr = obj.currentOffset();
 		obj.patch12(condaddr, exitaddr);
+		return null;
+	}
+
+	// EXTENSION
+	@Override
+	public Void visitFor(FunParser.ForContext ctx) {
+		Address indexLoc = addrTable.get(ctx.ID().getText());
+		byte load = indexLoc.locale == Address.GLOBAL ? SVM.LOADG : SVM.LOADL;
+		byte store = indexLoc.locale == Address.GLOBAL ? SVM.STOREG : SVM.STOREL;
+
+		visit(ctx.expr(0)); // Visit assignment expression
+        obj.emit12(store, indexLoc.offset); // Update memory
+        int startAddr = obj.currentOffset(); // Remember start of loop
+        obj.emit12(load, indexLoc.offset);
+
+        visit(ctx.expr(1)); // Visit limit expression
+
+        obj.emit1(SVM.CMPLT);
+        int condAddr = obj.currentOffset(); // Remember condition location
+        obj.emit12(SVM.JUMPF, 0);
+
+        visit(ctx.seq_com()); // Visit body of for loop
+
+		obj.emit12(load, indexLoc.offset); // Increment index
+		obj.emit1(SVM.INC);
+		obj.emit12(store, indexLoc.offset);
+		obj.emit12(SVM.JUMP, startAddr); // Go to top of loop
+		obj.patch12(condAddr, obj.currentOffset()); // Update condition jump
+
 		return null;
 	}
 

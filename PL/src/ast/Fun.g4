@@ -6,6 +6,8 @@
 //
 // Converted to ANTLRv4 by Simon Gay, August 2015.
 //
+// Extended to allow for loops and switch statements by Stuart Reilly Feburary 2020.
+//
 //////////////////////////////////////////////////////////////
 
 
@@ -13,6 +15,10 @@ grammar Fun;
 
 // This specifies the Fun grammar, defining the syntax of Fun.
 
+// Add this back in before submission
+//@header{
+//package ast;
+//}
 
 //////// Programs
 
@@ -61,6 +67,10 @@ com
 
 	|	WHILE expr COLON          
 		  seq_com DOT             # while
+
+    // EXTENSION
+	|   FOR ID ASSN expr TO expr COLON
+	        seq_com DOT           # for
 	;
 
 seq_com
@@ -107,6 +117,8 @@ PROC	:	'proc' ;
 RETURN :	'return' ;
 TRUE	:	'true' ;
 WHILE	:	'while' ;
+FOR     :   'for';
+TO      :   'to';
 
 EQ	:	'==' ;
 LT	:	'<' ;

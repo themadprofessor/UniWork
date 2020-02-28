@@ -6,6 +6,8 @@
 //
 // Based on a previous version by David Watt.
 //
+// Add for loop and switch statement support by Stuart Reilly February 2020
+//
 //////////////////////////////////////////////////////////////
 
 package fun;
@@ -329,6 +331,25 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 		Type t = visit(ctx.expr());
 		visit(ctx.seq_com());
 		checkType(Type.BOOL, t, ctx);
+		return null;
+	}
+
+	// EXTENSION
+	@Override
+	public Type visitFor(FunParser.ForContext ctx) {
+	    Type assignExpr = visit(ctx.expr(0));
+	    Type limitExpr = visit(ctx.expr(1));
+	    Type varType = typeTable.get(ctx.ID().getText());
+
+		visit(ctx.seq_com());
+		checkType(Type.INT, assignExpr, ctx);
+	    checkType(Type.INT, limitExpr, ctx);
+	    if (varType == null) {
+	    	reportError(ctx.ID().getText() + " is not defined", ctx);
+		} else {
+			checkType(Type.INT, varType, ctx);
+		}
+
 		return null;
 	}
 
