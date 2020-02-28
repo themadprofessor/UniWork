@@ -15,7 +15,7 @@
       <label>Moved Tracks</label>
       <or>
         <basic-event name="flood"/>
-        <basic-event name="bridge"/>
+        <basic-event name="slip"/>
       </or>
     </define-gate>
   </define-fault-tree>
@@ -66,7 +66,7 @@
   </define-fault-tree>
   <define-fault-tree name="powerCut">
     <define-gate name="powercut">
-      <label>Power Cutt</label>
+      <label>Power Cut</label>
       <or>
         <gate name="powerLine"/>
         <gate name="short"/>
@@ -87,23 +87,19 @@
   <model-data>
     <define-basic-event name="winds">
       <label>Extreme Winds</label>
-      <float value="1"/>
+      <float value="0.17"/>
     </define-basic-event>
     <define-basic-event name="flood">
       <label>Flooding</label>
-      <float value="1"/>
+      <float value="0.11"/>
     </define-basic-event>
     <define-basic-event name="slip">
       <label>Landslip</label>
-      <float value="1"/>
+      <float value="0.02"/>
     </define-basic-event>
     <define-basic-event name="temp">
       <label>Extreme Temp</label>
-      <float value="1"/>
-    </define-basic-event>
-    <define-basic-event name="bridge">
-      <label>Bridge Collapse</label>
-      <float value="1"/>
+      <float value="0.12"/>
     </define-basic-event>
   </model-data>
 </opsa-mef>
