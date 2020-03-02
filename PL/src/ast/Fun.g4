@@ -71,7 +71,22 @@ com
     // EXTENSION
 	|   FOR ID ASSN expr TO expr COLON
 	        seq_com DOT           # for
+	|   SWITCH expr COLON
+            case_stmt+
+            default_stmt DOT       # switch
 	;
+
+default_stmt
+    :   DEFAULT COLON
+            seq_com
+    ;
+
+case_stmt
+    :   CASE expr COLON
+            seq_com
+    |   CASE expr'.''.'expr COLON
+            seq_com
+    ;
 
 seq_com
 	:	com*                      # seq
@@ -117,8 +132,13 @@ PROC	:	'proc' ;
 RETURN :	'return' ;
 TRUE	:	'true' ;
 WHILE	:	'while' ;
-FOR     :   'for';
-TO      :   'to';
+
+// EXTENSION
+FOR     :   'for' ;
+TO      :   'to' ;
+SWITCH  :   'switch' ;
+CASE    :   'case' ;
+DEFAULT :   'default' ;
 
 EQ	:	'==' ;
 LT	:	'<' ;

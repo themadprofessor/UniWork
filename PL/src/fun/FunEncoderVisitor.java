@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import org.antlr.v4.runtime.misc.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ast.*;
@@ -283,6 +284,47 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 		obj.emit12(store, indexLoc.offset);
 		obj.emit12(SVM.JUMP, startAddr); // Go to top of loop
 		obj.patch12(condAddr, obj.currentOffset()); // Update condition jump
+
+		return null;
+	}
+
+	@Override
+	public Void visitSwitch(FunParser.SwitchContext ctx) {
+		visit(ctx.expr());
+		ArrayList<Integer> jumps = new ArrayList<>(ctx.case_stmt().size());
+
+		// Generate each case
+		for (FunParser.Case_stmtContext case_stmtContext : ctx.case_stmt()) {
+			visit(case_stmtContext);
+			jumps.add(obj.currentOffset());
+			obj.emit12(SVM.JUMP, 0);
+		}
+
+		// Generate default case
+		visit(ctx.default_stmt());
+
+		// Update the jumps
+		for (Integer jump : jumps) {
+			obj.patch12(jump, obj.currentOffset());
+		}
+
+		return null;
+	}
+
+	@Override
+	public Void visitDefault_stmt(FunParser.Default_stmtContext ctx) {
+		visit(ctx.seq_com());
+
+		return null;
+	}
+
+	@Override
+	public Void visitCase_stmt(FunParser.Case_stmtContext ctx) {
+		if (ctx.expr().size() == 1) {
+			visit(ctx.expr(0));
+			obj.emit1(SVM.CMPEQ);
+			obj.emit12(SVM.JUMPF, 0);
+		}
 
 		return null;
 	}

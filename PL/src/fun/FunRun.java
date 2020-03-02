@@ -31,8 +31,8 @@ public class FunRun {
 				throw new FunException();
 			SVM objprog = compile(args[0]);
 
-			out.println("Interpretation ...");
-			objprog.interpret(tracing);
+//			out.println("Interpretation ...");
+//			objprog.interpret(tracing);
 		} catch (FunException x) {
 			out.println("Compilation failed");
 		} catch (Exception x) {

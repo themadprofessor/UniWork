@@ -353,6 +353,38 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 		return null;
 	}
 
+	@Override
+	public Type visitSwitch(FunParser.SwitchContext ctx) {
+		Type expr = visit(ctx.expr());
+		for (FunParser.Case_stmtContext case_stmtContext : ctx.case_stmt()) {
+			checkType(expr, visit(case_stmtContext), case_stmtContext);
+		}
+
+		return null;
+	}
+
+	@Override
+	public Type visitDefault_stmt(FunParser.Default_stmtContext ctx) {
+		visit(ctx.seq_com());
+		return null;
+	}
+
+	@Override
+	public Type visitCase_stmt(FunParser.Case_stmtContext ctx) {
+	    Type t;
+		if (ctx.expr().size() == 1) {
+			// Not a range
+			t = visit(ctx.expr(0));
+		} else {
+			t = visit(ctx.expr(0));
+			checkType(Type.INT, t, ctx);
+			checkType(Type.INT, visit(ctx.expr(1)), ctx);
+		}
+		visit(ctx.seq_com());
+
+		return t;
+	}
+
 	/**
 	 * Visit a parse tree produced by the {@code seq}
 	 * labeled alternative in {@link FunParser#seq_com}.
