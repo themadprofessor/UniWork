@@ -20,7 +20,7 @@ public class BACP {
 	private int nPeriods;
 	private int nCourses;
 
-    private IntVar[][] table;
+	private IntVar[][] table;
 
 	public BACP(int nCourses,int nPeriods,
 				int minCredits,int maxCredits,
@@ -39,7 +39,8 @@ public class BACP {
 		maxCreditsInAllPeriods = model.intVar("maxCredits",minCredits,maxCredits);
 		imbalance              = model.intVar("imbalance",0,maxCredits-minCredits);
 
-        IntVar[] creditsInPeriods = model.intVarArray(nPeriods, minCredits, maxCredits);
+		IntVar[] creditsInPeriods = model.intVarArray(nPeriods, minCredits, maxCredits);
+//		IntVar[] coursesInPeriods = model.intVarArray(nCourses, minCourses, maxCourses);
 
 		//
 		// create necessary variables for your model
@@ -57,6 +58,7 @@ public class BACP {
 
 		for (int i = 0; i < nPeriods; i++) {
 			// Ensure all periods have between the min and max course count
+//            model.sum(table[i], "=", coursesInPeriods[i]).post();
 			model.sum(table[i], ">=", minCourses).post();
 			model.sum(table[i], "<=", maxCourses).post();
 
@@ -68,16 +70,16 @@ public class BACP {
 			model.scalar(table[i], credits, "=", creditsInPeriods[i]).post();
 		}
 
-        model.max(maxCreditsInAllPeriods, creditsInPeriods).post();
+		model.max(maxCreditsInAllPeriods, creditsInPeriods).post();
 		model.min(minCreditsInAllPeriods, creditsInPeriods).post();
 		model.arithm(imbalance, "=", maxCreditsInAllPeriods, "-", minCreditsInAllPeriods).post();
 
 		// Ensure all prerequisites come before the courses which require them
-        for (int i = 0; i < prereq.length; i++) {
-            for (int before : prereq[i]) {
-                model.lexLess(ArrayUtils.getColumn(table, i), ArrayUtils.getColumn(table, before)).post();
-            }
-        }
+		for (int i = 0; i < prereq.length; i++) {
+			for (int before : prereq[i]) {
+				model.lexLess(ArrayUtils.getColumn(table, i), ArrayUtils.getColumn(table, before)).post();
+			}
+		}
 	}
 
 	void optimize(){
