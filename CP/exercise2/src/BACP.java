@@ -1,5 +1,6 @@
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solver;
+import org.chocosolver.solver.search.strategy.Search;
 import org.chocosolver.solver.variables.IntVar;
 import org.chocosolver.util.tools.ArrayUtils;
 
@@ -40,7 +41,6 @@ public class BACP {
 		imbalance              = model.intVar("imbalance",0,maxCredits-minCredits);
 
 		IntVar[] creditsInPeriods = model.intVarArray(nPeriods, minCredits, maxCredits);
-//		IntVar[] coursesInPeriods = model.intVarArray(nCourses, minCourses, maxCourses);
 
 		//
 		// create necessary variables for your model
@@ -58,7 +58,6 @@ public class BACP {
 
 		for (int i = 0; i < nPeriods; i++) {
 			// Ensure all periods have between the min and max course count
-//            model.sum(table[i], "=", coursesInPeriods[i]).post();
 			model.sum(table[i], ">=", minCourses).post();
 			model.sum(table[i], "<=", maxCourses).post();
 
@@ -84,6 +83,7 @@ public class BACP {
 
 	void optimize(){
 		model.setObjective(Model.MINIMIZE,imbalance);
+        solver.setSearch(Search.defaultSearch(model));
 		//
 		// optionally, set search strategy
 		//

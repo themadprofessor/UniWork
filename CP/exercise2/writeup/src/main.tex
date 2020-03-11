@@ -1,0 +1,53 @@
+%! Author = stuart
+%! Date = 09/03/20
+
+% Preamble
+\documentclass[11pt]{article}
+
+% Packages
+\usepackage{amsmath}
+\title{Constraint Programming Exercise 2\\The Balanced Academic Curriculum Problem}
+\date{\today}
+\author{Stuart Reilly - 2258082R}
+
+% Document
+\begin{document}
+    \maketitle
+
+    \section{Model}\label{sec:model}
+    The model is defined as the two-dimensional array \texttt{table} of \texttt{IntVar} where each \texttt{IntVar} has
+    the domain of \({0,1}\), the \texttt{i}\textsuperscript{th} \texttt{j}\textsuperscript{th} \texttt{IntVar} has the
+    value of \(1\) if the \texttt{j}\textsuperscript{th} course is in the \texttt{i}\textsuperscript{th} period.
+    From this, the \texttt{IntVar[]} \texttt{creditsInPeriod} is defined as the i\textsuperscript{th} element in
+    \texttt{creditsInPeriod} is sum of the credits for all courses in the \texttt{i}\textsuperscript{th} period.
+    The \texttt{IntVar}s \texttt{maxCreditsInAllPeriods} and \texttt{minCreditsInAllPeriods} are then defined as the
+    maximum and minimum in \texttt{creditsInPeriod}.
+    From these two variables, the \texttt{IntVar} \texttt{imbalance} is defined to be the difference between
+    \texttt{maxCreditsInAllPeriods} and\\\texttt{minCreditsInAllPeriods}.
+
+    There is a constraint which ensures a course can only appear in a single period is the sum of each column in
+    \texttt{table} must equal \(1\).
+    To ensure the course count requirements for each period are met, the sum of each row must be within the external
+    variables \texttt{minCourses} and \texttt{maxCourses}.
+    Similarly, credit count requirements are enforced by requiring the sum of each row's credits to be with the external
+    variables \texttt{minCredits} and \texttt{maxCredits}.
+    To enforce the prerequisites, if course \texttt{i} has a prerequisite \texttt{j} then the \texttt{i}
+    \textsuperscript{th} column of \texttt{table} must be lexographically less then the \texttt{j}
+    \textsuperscript{th} column of t\texttt{table}.
+    Since the columns can be represented as a binary number, if one column is lexicographically less than another, the
+    other column can be a perquisite of the first.
+
+    \section{Computational Experience}\label{sec:computational-experience}
+    Through trial and error, the default search strategy produced the least nodes.
+    Since the model is defined as an \(MxN\) array, the memory use of the model scales with the product of the number of
+    courses and periods.
+    The computational complexity growth for ensuring prerequisites are met grows linearly with the number of
+    prerequisites.
+
+    \section{Alternative Model}\label{sec:alternative-model}
+    Rather than using a two-dimensional array, an array of sets could be used.
+    The \texttt{i}\textsuperscript{th} set in the array would be the set of courses in the \texttt{i}
+    \textsuperscript{th} period.
+    This method would require a more complex method of checking prerequisites as for each course with prerequisites,
+    each prerequisite would have to be searched for in all prior periods, rather than comparing two binary values.
+\end{document}
