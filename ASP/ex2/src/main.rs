@@ -1,8 +1,8 @@
 use std::env;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
-use std::sync::mpsc::{Receiver, Sender};
-use std::sync::{Arc, Barrier};
+use std::sync::mpsc::{self, Receiver, Sender};
+use std::thread;
 
 /// Attempt to open a TcpStream to the given SocketAddr, sending it over the
 /// given if the stream successfully opened
@@ -57,7 +57,7 @@ fn send_http(chan: Receiver<TcpStream>, host: &str) {
             }
         }
 
-        // If only contains return, it is an empty line
+        // If only contains return, it is an empty line aka end of headers
         if &data == "\r\n" {
             break;
         }
@@ -65,66 +65,67 @@ fn send_http(chan: Receiver<TcpStream>, host: &str) {
         data.make_ascii_lowercase();
         if data.starts_with("content-length:") {
             // Convert the value of content-length header to a Some(u64).
-            // If the convertion failed or content-length was empty, set content_len to None
-            content_len = data.split(':').nth(1).and_then(|n| n.trim().parse::<u64>().ok());
+            // If the conversion failed or content-length was empty, set content_len to None
+            content_len = data
+                .split(':')
+                .nth(1)
+                .and_then(|n| n.trim().parse::<u64>().ok());
         }
     }
 
     data.clear();
+    let stdout = std::io::stdout();
+    let mut lock = stdout.lock();
 
     // If the header contained a content-length, read that many bytes, otherwise read till end
     if let Some(len) = content_len {
-        if let Err(e) = conn.take(len).read_to_string(&mut data) {
+        if let Err(e) = std::io::copy(&mut conn.take(len), &mut lock) {
             eprintln!("failed to read {} bytes: {}", len, e);
         }
     } else {
-        if let Err(e) = conn.read_to_string(&mut data) {
+        if let Err(e) = std::io::copy(&mut conn, &mut lock) {
             eprintln!("failed to read: {}", e);
         }
     }
-
-    println!("{}", data);
 }
 
 fn main() {
     // First arg is the program name
     for addr in env::args().skip(1) {
-        // Iterators can only be used once, so keep track of valid addresses to avoid extra alloc
-        let mut count = 0;
         let sock_addrs = match (addr.as_str(), 80).to_socket_addrs() {
-            Ok(s) => {
-                count += 1;
-                s
-            }
+            Ok(s) => s,
             Err(e) => {
                 eprintln!("failed dns lookup [{}]: {}", addr, e);
                 continue;
             }
-        };
+        }
+        .collect::<Vec<_>>();
 
-        let (sender, receiver) = std::sync::mpsc::channel();
-        let barrier = Arc::new(Barrier::new(count));
-        let mut threads = Vec::with_capacity(count + 1);
+        let (send_conn, recv_conn) = mpsc::channel();
+        let mut senders = Vec::with_capacity(sock_addrs.len());
+        let mut joins = Vec::with_capacity(sock_addrs.len() + 1);
 
-        // Start the thread which will send the HTTP request
-        threads.push(std::thread::spawn(move || {
-            send_http(receiver, &addr);
-        }));
-
-        // Spawn the threads to race the connections in a paused state until they have all spawned
-        for sock_addr in sock_addrs {
-            let b = barrier.clone();
-            let chan = sender.clone();
-            threads.push(std::thread::spawn(move || {
-                // Wait until all threads have spawned
-                b.wait();
-                attempt_conn(chan, sock_addr);
+        for _ in 0..sock_addrs.len() {
+            let (send_addr, recv_addr) = mpsc::channel();
+            let send_clone = send_conn.clone();
+            senders.push(send_addr);
+            joins.push(thread::spawn(move || {
+                // Only fails if sender has been closed, which it isn't until main returns
+                let sock_addr = recv_addr.recv().unwrap();
+                attempt_conn(send_clone, sock_addr);
             }));
         }
 
-        for x in threads {
-            // A join only returns Err if the thread panicked.
-            x.join().unwrap();
+        joins.push(thread::spawn(move || send_http(recv_conn, &addr)));
+
+        for (sock_addr, sender) in sock_addrs.into_iter().zip(senders) {
+            // Only fails if receiver has been closed, which it isn't until the receiver thread has
+            // ended, which can't be before it receives an addr
+            sender.send(sock_addr).unwrap();
+        }
+
+        for x in joins {
+            x.join().unwrap(); // Only fails if thread panics.
         }
     }
 }
