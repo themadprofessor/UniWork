@@ -288,29 +288,45 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 		return null;
 	}
 
+	// EXTENSION
 	@Override
 	public Void visitSwitch(FunParser.SwitchContext ctx) {
-		visit(ctx.expr());
-		ArrayList<Integer> jumps = new ArrayList<>(ctx.case_stmt().size());
+		ArrayList<Integer> successJumps = new ArrayList<>(ctx.case_stmt().size());
+		int prevJump = 0;
 
 		// Generate each case
-		for (FunParser.Case_stmtContext case_stmtContext : ctx.case_stmt()) {
+		List<FunParser.Case_stmtContext> case_stmt = ctx.case_stmt();
+		for (int i = 0, case_stmtSize = case_stmt.size(); i < case_stmtSize; i++) {
+			visit(ctx.expr());
+			FunParser.Case_stmtContext case_stmtContext = case_stmt.get(i);
+			if (i != 0) {
+				obj.patch12(prevJump, obj.currentOffset());
+			}
+
 			visit(case_stmtContext);
-			jumps.add(obj.currentOffset());
+
+			obj.emit12(SVM.LOADC, 1);
+			obj.emit1(SVM.CMPEQ);
+			prevJump = obj.currentOffset();
+			obj.emit12(SVM.JUMPF, 0);
+
+			successJumps.add(obj.currentOffset());
 			obj.emit12(SVM.JUMP, 0);
 		}
+		obj.patch12(prevJump, obj.currentOffset());
 
 		// Generate default case
 		visit(ctx.default_stmt());
 
 		// Update the jumps
-		for (Integer jump : jumps) {
+		for (Integer jump : successJumps) {
 			obj.patch12(jump, obj.currentOffset());
 		}
 
 		return null;
 	}
 
+	// EXTENSION
 	@Override
 	public Void visitDefault_stmt(FunParser.Default_stmtContext ctx) {
 		visit(ctx.seq_com());
@@ -318,12 +334,74 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 		return null;
 	}
 
+	// EXTENSION
 	@Override
 	public Void visitCase_stmt(FunParser.Case_stmtContext ctx) {
-		if (ctx.expr().size() == 1) {
-			visit(ctx.expr(0));
+		if (ctx.raw_lit() != null) { // not a range
+			visit(ctx.raw_lit());
+			//visit(((FunParser.SwitchContext) ctx.parent).expr());
+
 			obj.emit1(SVM.CMPEQ);
-			obj.emit12(SVM.JUMPF, 0);
+			int success = obj.currentOffset();
+			obj.emit12(SVM.JUMPT, 0);
+			obj.emit12(SVM.LOADC, 0);
+			int fail = obj.currentOffset();
+			obj.emit12(SVM.JUMP, 0);
+
+			obj.patch12(success, obj.currentOffset());
+			visit(ctx.seq_com());
+			obj.emit12(SVM.LOADC, 1);
+
+			obj.patch12(fail, obj.currentOffset());
+		} else {
+			int lowerEqJump, upperEqJump, betweenJump, failJump;
+			int lower = Integer.parseInt(ctx.NUM(0).getText());
+			int upper = Integer.parseInt(ctx.NUM(1).getText());
+
+			// If equal to lower bound, jump to body
+			obj.emit12(SVM.LOADC, lower);
+			//visit(((FunParser.SwitchContext) ctx.parent).expr());
+			obj.emit1(SVM.CMPEQ);
+			lowerEqJump = obj.currentOffset();
+			obj.emit12(SVM.JUMPT, 0);
+
+			// If equal to upper bound, jump to body
+			obj.emit12(SVM.LOADC, upper);
+			visit(((FunParser.SwitchContext) ctx.parent).expr());
+			obj.emit1(SVM.CMPEQ);
+			upperEqJump = obj.currentOffset();
+			obj.emit12(SVM.JUMPT, 0);
+
+			// Check if greater than lower bound
+			obj.emit12(SVM.LOADC, lower);
+			visit(((FunParser.SwitchContext) ctx.parent).expr());
+			obj.emit1(SVM.CMPGT);
+
+			// Check if less than upper bound
+			obj.emit12(SVM.LOADC, upper);
+			visit(((FunParser.SwitchContext) ctx.parent).expr());
+			obj.emit1(SVM.CMPLT);
+
+			// If both checks are equal, must be within bounds
+			// Impossible to be greater than upper and less than lower
+			obj.emit1(SVM.CMPEQ);
+			betweenJump = obj.currentOffset();
+			obj.emit12(SVM.JUMPT, 0);
+
+			// Failed to match any, push false and jump over block
+			obj.emit12(SVM.LOADC, 0);
+			failJump = obj.currentOffset();
+			obj.emit12(SVM.JUMP, 0);
+
+			// Update equality jumps
+			obj.patch12(lowerEqJump, obj.currentOffset());
+			obj.patch12(upperEqJump, obj.currentOffset());
+			obj.patch12(betweenJump, obj.currentOffset());
+
+			visit(ctx.seq_com());
+			obj.emit12(SVM.LOADC, 1);
+
+			obj.patch12(failJump, obj.currentOffset());
 		}
 
 		return null;
@@ -495,4 +573,21 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 		return null;
 	}
 
+	@Override
+	public Void visitRaw_false(FunParser.Raw_falseContext ctx) {
+		obj.emit12(SVM.LOADC, 0);
+		return null;
+	}
+
+	@Override
+	public Void visitRaw_true(FunParser.Raw_trueContext ctx) {
+		obj.emit12(SVM.LOADC, 1);
+		return null;
+	}
+
+	@Override
+	public Void visitRaw_num(FunParser.Raw_numContext ctx) {
+		obj.emit12(SVM.LOADC, Integer.parseInt(ctx.NUM().getText()));
+		return null;
+	}
 }

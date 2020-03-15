@@ -71,20 +71,23 @@ com
     // EXTENSION
 	|   FOR ID ASSN expr TO expr COLON
 	        seq_com DOT           # for
+
 	|   SWITCH expr COLON
             case_stmt+
             default_stmt DOT       # switch
 	;
 
+// EXTENSION
 default_stmt
     :   DEFAULT COLON
             seq_com
     ;
 
+// EXTENSION
 case_stmt
-    :   CASE expr COLON
+    :   CASE raw_lit COLON
             seq_com
-    |   CASE expr'.''.'expr COLON
+    |   CASE NUM'.''.'NUM COLON
             seq_com
     ;
 
@@ -119,6 +122,11 @@ actual
     :   expr?
     ;
 
+raw_lit
+    :   FALSE                  # raw_false
+    |   TRUE                   # raw_true
+    |   NUM                    # raw_num
+    ;
 
 //////// Lexicon
 

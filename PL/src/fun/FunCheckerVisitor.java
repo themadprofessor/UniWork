@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import org.antlr.v4.runtime.misc.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 import ast.*;
@@ -108,6 +109,22 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 			reportError("type is " + typeActual
 							+ ", should be " + typeExpected,
 					construct);
+	}
+
+	// EXTENSION
+	private void checkType(Type[] expected, Type actual, ParserRuleContext construct) {
+		boolean valid = false;
+
+		for (Type type : expected) {
+			if (actual.equiv(type)) {
+			    valid = true;
+			    break;
+			}
+		}
+
+		if (!valid) {
+			reportError("type is " + actual + ", should be one of " + Arrays.toString(expected), construct);
+		}
 	}
 
 	private Type checkCall (String id, Type typeArg,
@@ -353,6 +370,7 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 		return null;
 	}
 
+	// EXTENSION
 	@Override
 	public Type visitSwitch(FunParser.SwitchContext ctx) {
 		Type expr = visit(ctx.expr());
@@ -360,25 +378,27 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 			checkType(expr, visit(case_stmtContext), case_stmtContext);
 		}
 
+		checkType(new Type[]{Type.INT, Type.BOOL}, expr, ctx); // Only allow int or bool expression
+
 		return null;
 	}
 
+	// EXTENSION
 	@Override
 	public Type visitDefault_stmt(FunParser.Default_stmtContext ctx) {
 		visit(ctx.seq_com());
 		return null;
 	}
 
+	// EXTENSION
 	@Override
 	public Type visitCase_stmt(FunParser.Case_stmtContext ctx) {
 	    Type t;
-		if (ctx.expr().size() == 1) {
+		if (ctx.raw_lit() != null) {
 			// Not a range
-			t = visit(ctx.expr(0));
+			t = visit(ctx.raw_lit());
 		} else {
-			t = visit(ctx.expr(0));
-			checkType(Type.INT, t, ctx);
-			checkType(Type.INT, visit(ctx.expr(1)), ctx);
+			t = Type.INT;
 		}
 		visit(ctx.seq_com());
 
@@ -519,4 +539,21 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 		return t;
 	}
 
+	// EXTENSION
+	@Override
+	public Type visitRaw_false(FunParser.Raw_falseContext ctx) {
+		return Type.BOOL;
+	}
+
+	// EXTENSION
+	@Override
+	public Type visitRaw_true(FunParser.Raw_trueContext ctx) {
+		return Type.BOOL;
+	}
+
+	// EXTENSION
+	@Override
+	public Type visitRaw_num(FunParser.Raw_numContext ctx) {
+		return Type.INT;
+	}
 }
