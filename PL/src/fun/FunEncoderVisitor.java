@@ -341,6 +341,7 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 			visit(ctx.raw_lit());
 			//visit(((FunParser.SwitchContext) ctx.parent).expr());
 
+            // If case equals variable, jump to block, otherwise push false and jump over block
 			obj.emit1(SVM.CMPEQ);
 			int success = obj.currentOffset();
 			obj.emit12(SVM.JUMPT, 0);
@@ -348,10 +349,13 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 			int fail = obj.currentOffset();
 			obj.emit12(SVM.JUMP, 0);
 
+			// Update equals jump
 			obj.patch12(success, obj.currentOffset());
 			visit(ctx.seq_com());
+			// Push true
 			obj.emit12(SVM.LOADC, 1);
 
+			// Update not-equal jump
 			obj.patch12(fail, obj.currentOffset());
 		} else {
 			int lowerEqJump, upperEqJump, betweenJump, failJump;

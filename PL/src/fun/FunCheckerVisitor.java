@@ -16,6 +16,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import org.antlr.v4.runtime.misc.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -374,11 +375,38 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 	@Override
 	public Type visitSwitch(FunParser.SwitchContext ctx) {
 		Type expr = visit(ctx.expr());
+		List<Tuple<int[], FunParser.Case_stmtContext>> case_vals = new ArrayList<>(ctx.case_stmt().size());
+
 		for (FunParser.Case_stmtContext case_stmtContext : ctx.case_stmt()) {
-			checkType(expr, visit(case_stmtContext), case_stmtContext);
+			Type caseType = visit(case_stmtContext);
+			if (caseType instanceof Type.Pair) {
+				checkType(expr, ((Type.Pair) caseType).first, case_stmtContext);
+				case_vals.add(new Tuple<>(new int[]{
+						Integer.parseInt(case_stmtContext.NUM(0).getText()),
+						Integer.parseInt(case_stmtContext.NUM(1).getText())
+				}, case_stmtContext));
+			} else {
+				checkType(expr, visit(case_stmtContext), case_stmtContext);
+				int[] vals;
+
+				if (caseType == Type.INT) {
+					vals = new int[] {Integer.parseInt(case_stmtContext.raw_lit().getText())};
+				} else if (caseType == Type.BOOL) {
+					vals = new int[] {Boolean.parseBoolean(case_stmtContext.raw_lit().getText()) ? 0 : 1};
+				} else {
+					vals = new int[] {-1}; // Invalid type
+				}
+			}
 		}
 
 		checkType(new Type[]{Type.INT, Type.BOOL}, expr, ctx); // Only allow int or bool expression
+
+		for (int i = 0; i < case_vals.size(); i++) {
+			for (int j = i; j < case_vals.size(); j++) {
+				Tuple<int[], FunParser.Case_stmtContext> left = case_vals.get(i);
+				Tuple<int[], FunParser.Case_stmtContext> right = case_vals.get(j);
+			}
+		}
 
 		return null;
 	}
@@ -398,7 +426,7 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 			// Not a range
 			t = visit(ctx.raw_lit());
 		} else {
-			t = Type.INT;
+			t = new Type.Pair(Type.INT, Type.INT);
 		}
 		visit(ctx.seq_com());
 
