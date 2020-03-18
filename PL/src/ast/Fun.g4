@@ -73,7 +73,7 @@ com
 	        seq_com DOT           # for
 
 	|   SWITCH expr COLON
-            case_stmt+
+            case_stmt*
             default_stmt DOT       # switch
 	;
 
@@ -122,6 +122,7 @@ actual
     :   expr?
     ;
 
+// EXTENSION
 raw_lit
     :   FALSE                  # raw_false
     |   TRUE                   # raw_true

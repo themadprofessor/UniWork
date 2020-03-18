@@ -381,10 +381,14 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 			Type caseType = visit(case_stmtContext);
 			if (caseType instanceof Type.Pair) {
 				checkType(expr, ((Type.Pair) caseType).first, case_stmtContext);
-				case_vals.add(new Tuple<>(new int[]{
-						Integer.parseInt(case_stmtContext.NUM(0).getText()),
-						Integer.parseInt(case_stmtContext.NUM(1).getText())
-				}, case_stmtContext));
+				int lower = Integer.parseInt(case_stmtContext.NUM(0).getText());
+				int upper = Integer.parseInt(case_stmtContext.NUM(1).getText());
+
+				if (upper < lower) {
+					reportError("left value must be lower than the right in a range", case_stmtContext);
+				}
+
+				case_vals.add(new Tuple<>(new int[]{lower, upper}, case_stmtContext));
 			} else {
 				checkType(expr, visit(case_stmtContext), case_stmtContext);
 				int[] vals;
@@ -394,17 +398,53 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 				} else if (caseType == Type.BOOL) {
 					vals = new int[] {Boolean.parseBoolean(case_stmtContext.raw_lit().getText()) ? 0 : 1};
 				} else {
-					vals = new int[] {-1}; // Invalid type
+					vals = new int[] {}; // Invalid type
 				}
+
+				case_vals.add(new Tuple<>(vals, case_stmtContext));
 			}
 		}
 
 		checkType(new Type[]{Type.INT, Type.BOOL}, expr, ctx); // Only allow int or bool expression
 
 		for (int i = 0; i < case_vals.size(); i++) {
-			for (int j = i; j < case_vals.size(); j++) {
+			for (int j = i+1; j < case_vals.size(); j++) {
 				Tuple<int[], FunParser.Case_stmtContext> left = case_vals.get(i);
 				Tuple<int[], FunParser.Case_stmtContext> right = case_vals.get(j);
+
+				if (left.a.length == 1) {
+					if (right.a.length == 1) {
+						// Both literals
+						if (left.a[0] == right.a[0]) {
+							reportError(Util.overlapErrorString(left.a, right.a), left.b);
+						}
+					} else if (right.a.length == 2) {
+						// Left is literal, right is pair
+						if (right.a[0] < left.a[0] && right.a[1] > left.a[0]) {
+							reportError(Util.overlapErrorString(left.a, right.a), left.b);
+						}
+					} else {
+						// Right is void
+						reportError("case " + right.b.getText() + " is VOID", right.b);
+					}
+				} else if (left.a.length == 2) {
+					if (right.a.length == 1) {
+						// Left is pair, right is literal
+						if (left.a[0] < right.a[0] && left.a[1] > right.a[0]) {
+							reportError(Util.overlapErrorString(left.a, right.a), right.b);
+						}
+					} else if (right.a.length == 2) {
+						// Both pairs
+						if (left.a[0] <= right.a[1] && right.a[0] <= left.a[1]) {
+							reportError(Util.overlapErrorString(left.a, right.a), left.b);
+						}
+					} else {
+						// Right is void
+						reportError("case " + right.b.getText() + " is VOID", right.b);
+					}
+				} else {
+					reportError("case " + left.b.getText() + " is VOID", left.b);
+				}
 			}
 		}
 

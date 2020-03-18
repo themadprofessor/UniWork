@@ -292,7 +292,7 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 	@Override
 	public Void visitSwitch(FunParser.SwitchContext ctx) {
 		ArrayList<Integer> successJumps = new ArrayList<>(ctx.case_stmt().size());
-		int prevJump = 0;
+		int prevJump = -1;
 
 		// Generate each case
 		List<FunParser.Case_stmtContext> case_stmt = ctx.case_stmt();
@@ -305,6 +305,7 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 
 			visit(case_stmtContext);
 
+			// If actually ran block, jump to end of switch
 			obj.emit12(SVM.LOADC, 1);
 			obj.emit1(SVM.CMPEQ);
 			prevJump = obj.currentOffset();
@@ -313,7 +314,10 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 			successJumps.add(obj.currentOffset());
 			obj.emit12(SVM.JUMP, 0);
 		}
-		obj.patch12(prevJump, obj.currentOffset());
+		if (prevJump != -1) {
+		    // Only update if there is a previous jump
+			obj.patch12(prevJump, obj.currentOffset());
+		}
 
 		// Generate default case
 		visit(ctx.default_stmt());
