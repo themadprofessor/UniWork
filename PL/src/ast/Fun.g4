@@ -72,6 +72,7 @@ com
 	|   FOR ID ASSN expr TO expr COLON
 	        seq_com DOT           # for
 
+    // EXTENSION
 	|   SWITCH expr COLON
             case_stmt*
             default_stmt DOT       # switch

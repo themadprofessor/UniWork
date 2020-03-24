@@ -260,6 +260,23 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 	}
 
 	// EXTENSION
+	/*
+	fn for {
+		load initialValue
+		assign initialValue to iterVar
+		load iterVar
+		loop {
+			load limitVar
+			if iterVar < limitVar {
+				visitBody()
+				load iterVar
+				increment
+			} else {
+				break
+			}
+		}
+	}
+	 */
 	@Override
 	public Void visitFor(FunParser.ForContext ctx) {
 		Address indexLoc = addrTable.get(ctx.ID().getText());
@@ -289,6 +306,20 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 	}
 
 	// EXTENSION
+	/*
+	fn switch() {
+		for case in cases {
+			case.checkAndRun()
+
+			if (ranCase) {
+				break
+			}
+		}
+		if (!ranCase) {
+			default()
+		}
+	}
+	 */
 	@Override
 	public Void visitSwitch(FunParser.SwitchContext ctx) {
 		ArrayList<Integer> successJumps = new ArrayList<>(ctx.case_stmt().size());
@@ -331,6 +362,11 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 	}
 
 	// EXTENSION
+	/*
+	fn default() {
+		body()
+	}
+	 */
 	@Override
 	public Void visitDefault_stmt(FunParser.Default_stmtContext ctx) {
 		visit(ctx.seq_com());
@@ -339,6 +375,47 @@ public class FunEncoderVisitor extends AbstractParseTreeVisitor<Void> implements
 	}
 
 	// EXTENSION
+	/*
+	fn case.checkAndRun() {
+		if (isLiteral) {
+			load parent.switchVar
+			load literal
+			if (parent.switchVar == literal) {
+				body()
+				ranCase = true
+			} else {
+				ranCase = false
+			}
+		} else {
+			load parent.switchVar
+			load lowerBound
+			if (parent.switchVar == lowerBound) {
+				body()
+				ranCase = true
+				return
+			}
+
+			load parent.switchVar
+			load upperBound
+			if (parent.switchVar == upperBound) {
+				body()
+				ranCase = true
+				return
+			}
+
+			load parent.switchVar
+			load lowerBound
+			load upperBound
+
+			if (parent.switchVar > lowerBound && parent.switchVar < upperBound) {
+				body()
+				ranCase = true
+				return
+			}
+			ranCase = false
+		}
+	}
+	 */
 	@Override
 	public Void visitCase_stmt(FunParser.Case_stmtContext ctx) {
 		if (ctx.raw_lit() != null) { // not a range

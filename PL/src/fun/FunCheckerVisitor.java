@@ -178,6 +178,22 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 		return typeOp.range;
 	}
 
+	// EXTENSION
+	public static String rangeToString(int[] range) {
+		if (range.length == 0) {
+			return "";
+		} else if (range.length == 1) {
+			return String.valueOf(range[0]);
+		} else  {
+			return range[0] + ".." + range[1];
+		}
+	}
+
+	// EXTENSION
+	public static String overlapErrorString(int[] left, int[] right) {
+		return "case " + rangeToString(left) + " and case " + rangeToString(right) + " overlap";
+	}
+
 	/**
 	 * Visit a parse tree produced by the {@code prog}
 	 * labeled alternative in {@link FunParser#program}.
@@ -357,16 +373,11 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 	public Type visitFor(FunParser.ForContext ctx) {
 	    Type assignExpr = visit(ctx.expr(0));
 	    Type limitExpr = visit(ctx.expr(1));
-	    Type varType = typeTable.get(ctx.ID().getText());
 
 		visit(ctx.seq_com());
-		checkType(Type.INT, assignExpr, ctx);
-	    checkType(Type.INT, limitExpr, ctx);
-	    if (varType == null) {
-	    	reportError(ctx.ID().getText() + " is not defined", ctx);
-		} else {
-			checkType(Type.INT, varType, ctx);
-		}
+		checkType(Type.INT, assignExpr, ctx.expr(0));
+	    checkType(Type.INT, limitExpr, ctx.expr(1));
+	    checkType(Type.INT, retrieve(ctx.ID().getText(), ctx), ctx);
 
 		return null;
 	}
@@ -416,12 +427,12 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 					if (right.a.length == 1) {
 						// Both literals
 						if (left.a[0] == right.a[0]) {
-							reportError(Util.overlapErrorString(left.a, right.a), left.b);
+							reportError(overlapErrorString(left.a, right.a), left.b);
 						}
 					} else if (right.a.length == 2) {
 						// Left is literal, right is pair
 						if (right.a[0] < left.a[0] && right.a[1] > left.a[0]) {
-							reportError(Util.overlapErrorString(left.a, right.a), left.b);
+							reportError(overlapErrorString(left.a, right.a), left.b);
 						}
 					} else {
 						// Right is void
@@ -431,12 +442,12 @@ public class FunCheckerVisitor extends AbstractParseTreeVisitor<Type> implements
 					if (right.a.length == 1) {
 						// Left is pair, right is literal
 						if (left.a[0] < right.a[0] && left.a[1] > right.a[0]) {
-							reportError(Util.overlapErrorString(left.a, right.a), right.b);
+							reportError(overlapErrorString(left.a, right.a), right.b);
 						}
 					} else if (right.a.length == 2) {
 						// Both pairs
 						if (left.a[0] <= right.a[1] && right.a[0] <= left.a[1]) {
-							reportError(Util.overlapErrorString(left.a, right.a), left.b);
+							reportError(overlapErrorString(left.a, right.a), left.b);
 						}
 					} else {
 						// Right is void
