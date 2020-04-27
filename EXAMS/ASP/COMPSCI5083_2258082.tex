@@ -1,0 +1,288 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+
+\documentclass[]{article}
+
+\usepackage{amssymb,amsmath}
+\usepackage{booktabs}
+\usepackage{etoolbox}
+\usepackage{ifxetex,ifluatex}
+\usepackage{lmodern}
+\usepackage{tabulary}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{listings-rust}
+
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+
+\lstset {
+	language=Rust,
+	tabsize=4,
+	basicstyle=\footnotesize\ttfamily,
+	keywordstyle=\bfseries\color{green!40!black},
+	commentstyle=\itshape\color{purple!40!black},
+	identifierstyle=\color{blue},
+	stringstyle=\color{orange},
+}
+
+\author{2258082}
+\date{\today}
+
+\begin{document}
+
+Please include your student number in filename (e.g. 1234567)
+
+\begin{tabulary}{0.7\textwidth}{LL}
+	\toprule
+	Student number: & 2258082 \\
+	\midrule
+	Course title: & \\
+	\midrule
+	Questions answered: & \\
+	\bottomrule
+\end{tabulary}
+\pagebreak
+
+\section{Question 1}
+\subsection{Question 1.a}
+Rust aims to produce safe programs, which requires the complex type system.
+Such a type system improves systems programming by ensuring only safe
+operations can be performed, preventing undefined behaviour.
+Since the majority of security vulnerabilities are due to unsafe memory
+operations, preventing all unsafe operations will reduce the amount of security
+vulnerabilities a program can have.
+Traditional bugs such as use-after-free and dereferencing-null are impossible
+in Rust.
+
+Rust's type system and borrow checker result in a steep learning curve for new
+comers to the language.
+This is mediated by the book created by the Rust developers, the wide range of
+guides for developers from other languages, and the descriptive error messages
+from the compiler.
+Furthermore, overcoming the learning curve teaches the programmer the range of
+bugs that exist in other software that can be prevented by the Rust compiler,
+leading to better software when the programmer uses other languages.
+
+\subsection{Question 1.b}
+One method is define each state of the state machine as its own struct, and
+define the transitions between each state as functions.
+Rust's ownership model allows the functions to take ownership of the state,
+ensuring the state machine cannot exist in two states simultaneously.
+
+The following code represents the state machine for a process.
+\begin{lstlisting}
+struct Building {...}
+struct Ready {...}
+struct Running {...}
+struct Waiting {...}
+struct Terminated {...}
+
+impl Building {
+	pub fn new() -> Building {...}
+	pub fn build(self) -> Ready {...}
+}
+
+impl Ready {
+	pub fn run(self) -> Running {...}
+}
+
+impl Running {
+	pub fn interrupt(self) -> Ready {...}
+	pub fn wait_for_event(self) -> Waiting {...}
+	pub fn exit(self) -> Terminated {...}
+}
+
+impl Waiting {
+	pub fn event_received(self) -> Ready {...}
+}
+\end{lstlisting}
+Since each method representing a state transition consumes the current state
+(takes \lstinline{self} rather than \lstinline{&self} or \lstinline{&mut self}),
+the compiler can ensure the program cannot have a process in two states
+simultaneously.
+The compiler ensures each variable has a single owner, so the following code
+would not compile.
+\begin{lstlisting}
+fn main() {
+	let process = Building::new();
+	let ready_process = process.build();
+	let ready_process_again = process.build();
+}
+\end{lstlisting}
+\lstinline{process.build()} takes ownership of the variable \lstinline{process},
+so it cannot be used again in the function.
+
+Another benefit to this method is it is impossible to enter a state incorrectly.
+A state with a method which does not take \lstinline{self} as an argument is a
+starting state, in this case \lstinline{Building} is the only start state.
+No other states can be constructed directly, only through the defined state
+transitions, and this can be enforced at compile time.
+For example, it is impossible to create a process which is immediately in the
+\lstinline{Running} state, without first being in the \lstinline{Building} and
+\lstinline{Ready} states prior.
+
+This method of representing a state machine relies on the compiler's ability to
+track ownership of variables.
+Without it, the programmer would be free to use a process in a state it is not
+in.
+Furthermore, checking if the process is in a valid state is a compile-time
+check, which means there is no need to check which state a process is in at
+runtime.
+This is safer as runtime checks could be left out, and more performant as the
+checks are done at compile time.
+The main drawback with this method is the state transitions are not easy for
+the programmer to follow.
+State transitions are encoded as methods of a state, rather than an explicit
+table.
+
+\section{Question 2}
+\subsection{Question 2.a}
+The majority of an operating system can be implemented in a memory safe
+language.
+An area of difficulty is the boot section of the operating system.
+When a computer boots, it's not in a state where high-level programming
+languages can be ran.
+For example, TLBs and caches may need to be initialised, or the processor may
+not be in the correct mode.
+These operations need to be done in assembly, which is inherently a memory
+unsafe language.
+Once the system has been initialised, operation can hand over to a memory safe
+language for the majority of the execution.
+
+\subsection{Question 2.b}
+It would be possible but not a good idea.
+While using a garbage collected language would allow the programmer to not
+focus on memory as much, the drawbacks out way this.
+Efficient garbage collectors require the memory to be split into 2 semispheres,
+which would increase the memory usage of the operating system dramatically.
+Furthermore, generally garbage collectors can interrupt the program at any time,
+which is not ideal for an operating system.
+The hardware would raise an interrupt while the garbage collector is running,
+likely leading to an inconsistent state.
+For example, interrupting the garbage collector to handle I/O, resulting in
+more garbage being created which the garbage collector may not handle correctly
+when control is returned to it.
+Most garbage collectors are stop-the-world, meaning they pause the running
+program and collect all garbage before unpauseing the program.
+The time taken to collect the garbage is non-deterministic, leading to
+arbitrary long pauses, which is not ideal for an operating system.
+A possible solution is to use an incremental garbage collector, but this would
+increase the number of context switches over time, leading to reduced overall
+performance.
+
+\subsection{Question 2.c}
+There are some operations which require assembly code, therefore exclusively
+writing all systems software in memory safe languages is unlikely.
+Writing the majority of systems software in memory safe languages, and writing
+safe wrappers to the sections which require unsafe languages is indeed
+possible.
+
+Migrating existing programs to a memory safe language requires large amounts of
+work and training.
+All developers on the project must be trained in the new language, and memory
+safe languages like Rust have steep learning curves.
+This will halt development of the program, so existing bugs will continue to
+exist while the program is migrated.
+Once the program has been migrated, the program is likely to be safer than
+before.
+There is no guarantee the migrations removes any bugs, and may even add new
+bugs.
+As such, industry would likely be reluctant to migrate existing programs.
+This is compounded with the lack of clear financial benefit and clear financial
+cost, caused by lost development on the product.
+
+With that said, migrating to a memory safe language would reduce the likelihood
+of certain bugs being introduced down the line.
+Most memory safe languages have FFI (foreign function interface) support, which
+can allow a program to either be incrementally migrated to a memory safe
+language, or extended using a memory safe language.
+
+\section{Question 3}
+\subsection{Question 3.a}
+Synchronous I/O blocks the calling thread while the operating system carries
+out the I/O.
+Asynchronous I/O does not block the calling thread, requiring the calling
+thread to poll the operating system about the status of the I/O operation.
+
+Using asynchronous I/O allows a program to continue running while the I/O is
+being done.
+This is beneficial in programs which interact with a user.
+If the program uses synchronous I/O, the user interface would ``hang'' while the
+program waited for the operating system to complete the I/O.
+Using asynchronous I/O, the user interface would remain responsive during the
+I/O.
+
+\subsection{Question 3.b}
+Coroutines allow the programmer to structure the program as if it was using
+synchronous I/O, which is easy to reason about, and allow the runtime handle
+the asynchronous nature of the underlying I/O operation.
+The programmer must then ensure that each coroutine yields frequently to avoid
+blocking the runtime.
+Since only a single coroutine can run at a time on an OS thread, if one
+coroutine doesn't yield for an extended period of time or blocks indefinitely,
+the OS thread will block, until the coroutine yields or completes.
+If the runtime only uses a single thread, the entire runtime will block.
+This is known as cooperative multitasking, and has been avoided since a single
+incorrect coroutine or program could block the whole program or system
+respectively.
+As such coroutines are a good method for small asynchronous programs, but large
+programs would make better use of other techniques.
+One technique is to dedicate a thread to polling the operating system for I/O
+operations, all I/O operations are passed to that thread, returning a Future to
+the calling thread.
+The calling thread can then utilise existing methods of waiting for the Future
+to complete, such as busy-waiting or semaphores.
+This allows the operating system to schedule the threads, rather than a
+programs runtime.
+
+\subsection{Question 3.c}
+Message passing does not prevent deadlocks.
+If thread A required a message from thread B, but thread B required a message
+for thread A before it could send a message to thread A, the system would
+deadlock.
+Depending on the implementation of the message passing, message passing does
+not prevent data races.
+If both actors are on the same system, often messages are passed using pointers.
+In this case, if the sending actor modified the message while the receiving
+actor was reading the message, a race condition can occur.
+
+Designing a system to use lock-based synchronisation is complex because two
+correctly locked block of code do not necessarily combine into a single
+correctly locked block.
+Whereas, a system designed with message-passing can compose assuming there are
+no data races allowed by the implementation.
+\end{document}
