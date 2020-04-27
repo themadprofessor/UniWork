@@ -1,0 +1,120 @@
+%! Author = stuart
+%! Date = 18/03/2020
+
+% Preamble
+\documentclass[11pt]{article}
+
+% Packages
+\usepackage{amsmath}
+\usepackage[a4paper,includeheadfoot,margin=2.54cm]{geometry}
+
+\author{Stuart Reilly - 2258082}
+\title{Programming Languages Assessed Coursework}
+\date{\today}
+
+% Document
+\begin{document}
+    \maketitle
+
+    \section{Running the Code}\label{sec:running-the-code}
+    Since you setup the project and all I had to do was extend it, you should know how to run the code.
+    Furthermore, initial setup to get the code to compile was unnecessarily arduous due to the lackluster layout of the
+    code, and the inclusion of a header statement in \texttt{Fun.g4}.
+
+    \section{Syntactic Analysis}\label{sec:syntactic-analysis}
+    To add the \texttt{for}-command, the grammer given in the assessed exercise was translate into ANTLR grammar, with
+    \texttt{for} and \texttt{to} being added as lexer rules, rather than parser rules.
+
+    The \texttt{switch}-command was added by first adding the overall structure of the grammar to the existing
+    \texttt{com} rule, then adding parser rules for \texttt{case} and \texttt{default}, with \texttt{case} allowed
+    zero or more times, and \texttt{default} being required.
+    Since \texttt{case} statements could only allow literals and ranges, a new parser rule was added \texttt{raw\_lit}
+    which duplicated the definition of \texttt{true}, \texttt{false} and \texttt{num} from \texttt{prim\_expr}, but would
+    not allow non-literals by design.
+    This moved checking for literal statements to the lexer.
+    \texttt{switch}, \texttt{case} and \texttt{default} were also added as lexer rules.
+
+    \section{Contextual Analysis}\label{sec:contextual-analysis}
+    The \texttt{for}-command the initial value and terminal value to be of type \texttt{INT}, which was checked using
+    existing \texttt{checkType} function.
+    Furthermore, the iteration variable had to be already defined and of type \texttt{INT}, which was checked using the
+    existing \texttt{retrieve} and \texttt{checkType} functions.
+    Then the body is typed checked.
+
+    The \texttt{switch}-command required the expression being tested to be either an \texttt{INT} or \texttt{BOOL}.
+    This was tested with an extension to the \texttt{checkType} function, which allowed a range of possible types which
+    the actual type could be.
+    Since the lexer ensured the \texttt{case} guards could only be literals or ranges, there is no need to check that in
+    the parser.
+    The parser does check if the guards have the same type as the expression being tested by iterating over all
+    \texttt{case}s and using the \texttt{checkType}.
+    To check no guards overlap, a list of all guard values is collected, then each value is compared to each other
+    value.
+    The following cases are handled:
+    \begin{itemize}
+        \item both are literals: ensure they don't equal
+        \item one is a literal and one is a range: ensure the literal doesn't fall within the range
+        \item both are ranges: ensure the ranges don't overlap
+    \end{itemize}
+    Since the types are ensured to are checked to be the same prior to this iteration, handling \texttt{BOOL} and
+    \texttt{INT} in the same way, by converting \texttt{BOOL} to integers for overlap checks.
+
+    \section{Code Generation}\label{sec:code-generation}
+    The \texttt{for}-command first evaluates the assignment's result, then stores that value into the iterator variable.
+    The load and store opcodes are selected by determining if the address is global.
+    If it is, use the \texttt{LOADG} and \texttt{STOREG} opcodes, otherwise use the \texttt{LOADL} and \texttt{STOREG}
+    opcodes.
+    Then the current offset is stored to be used for the end of block jump.
+    A load is then outputted to load the iterator variable, followed by the evaluated limit expression.
+    Then the iterator variable is compared to the limit expression.
+    The current offset is remembered to update the conditional jump's target address with the address after the block.
+    The conditional jump is then emitted, followed by the body of the loop.
+    Next a load, increment and store are emitted to increment the iterator variable, followed by an unconditional jump
+    to the remembered address before the iterator variable and evaluated limit expression.
+    Finally, the conditional jumps's target address is updated to the current offset.
+
+    The \texttt{switch}-command iterates over each case statement doing the following:
+    \begin{itemize}
+        \item Evaluate the switch expression
+        \item If this is not the first case, update the previous case's fail jump
+        \item Emit the case statement
+        \item Check if \(1\) is at the top of the stack
+        \item Remember the current offset as the fail jump offset
+        \item Emit a conditional jump which jumps if \(1\) isn't at the top of the stack
+        \item Remember the current offset as the success jump offset
+        \item Emit an unconditional jump
+    \end{itemize}
+    If there was at least one case statement, update the last fail jump with the current offset, then emit the default
+    case.
+    Finally, update all case's success jumps target address with the current offset.
+
+    If a case is a raw literal, the following occurs:
+    \begin{itemize}
+        \item Emit the literal value
+        \item Compare if value equals the switch variable
+        \item Remember the current offset as the success jump
+        \item Emit a conditional jump which jumps if true
+        \item Load the constant \(0\)
+        \item Remember the current offet as the fail jump
+        \item Emit an unconditional jump
+        \item Update the success jump's target address as the current offset
+        \item Evaluate the case block
+        \item Load the constant \(1\)
+        \item Update the fail jump's target address as the current offset
+    \end{itemize}
+    If a case is a range, the following occurs:
+    \begin{itemize}
+        \item Load the lower bound of the range
+        \item Compare if the switch variable is equal to the lower bound
+        \item Remember the current offset as the lower equality jump
+        \item Emit a conditional jump which jumps if true
+        \item Load the upper bound of the range
+        \item Evaluate the switch variable
+        \item Remember the current offset as the upper equality jump
+        \item Emit a conditional jump which jumps if true
+        \item
+    \end{itemize}
+    Each case finishes with either a \(0\) if it didn't match or \(1\) otherwise.
+    This is checked before the next case statement to determine whether to try the next case or jump to the end of the
+    switch, if the case did or didn't match respectively.
+\end{document}
